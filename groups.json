@@ -1,0 +1,10 @@
+{
+  "dev-tools": {
+    "description": "Development workflow skills",
+    "skills": ["changelog", "review"]
+  },
+  "documentation": {
+    "description": "Documentation and explanation skills",
+    "skills": ["explain", "loglog", "changelog"]
+  }
+}

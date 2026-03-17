@@ -3,6 +3,8 @@ name: review
 description: Review code changes for quality, security, performance, and style issues. Use when asked to review code, PRs, or diffs.
 allowed-tools: Read, Bash, Grep, Glob
 argument-hint: [file or PR number]
+tags: [code-quality, git]
+version: 1.0.0
 ---
 
 # Code Review Skill

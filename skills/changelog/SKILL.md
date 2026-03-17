@@ -3,6 +3,8 @@ name: changelog
 description: Generate changelog entries from git commits. Use when asked to create or update a changelog, release notes, or summarize changes.
 allowed-tools: Read, Write, Edit, Bash
 argument-hint: [version or commit range]
+tags: [git, documentation]
+version: 1.0.0
 ---
 
 # Changelog Generation Skill

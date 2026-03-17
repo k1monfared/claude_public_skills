@@ -3,6 +3,8 @@ name: explain
 description: Explain code with analogies, diagrams, and step-by-step walkthroughs. Use when asked to explain how code works, document complex logic, or onboard someone to a codebase.
 allowed-tools: Read, Grep, Glob
 argument-hint: [file, function, or concept]
+tags: [documentation, learning]
+version: 1.0.0
 ---
 
 # Code Explanation Skill
