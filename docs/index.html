@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Public Skills</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-hover: #1c2129;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-subtle: #1f6feb33;
+    --green: #3fb950;
+    --orange: #d29922;
+    --purple: #bc8cff;
+    --pink: #f778ba;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Noto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+
+  /* --- Sidebar --- */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar h1 {
+    font-size: 18px;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .sidebar .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  .sidebar h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin: 20px 0 8px;
+  }
+
+  .nav-skill {
+    display: block;
+    padding: 6px 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .nav-skill:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+
+  .nav-link {
+    display: block;
+    padding: 6px 12px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .nav-link:hover {
+    background: var(--accent-subtle);
+  }
+
+  /* --- Main content --- */
+  .main {
+    padding: 48px;
+    max-width: 960px;
+  }
+
+  .hero {
+    margin-bottom: 48px;
+  }
+
+  .hero h1 {
+    font-size: 36px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero p {
+    font-size: 18px;
+    color: var(--text-muted);
+    max-width: 600px;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 24px;
+    margin: 24px 0 0;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 24px;
+    text-align: center;
+  }
+
+  .stat .num {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* --- Sections --- */
+  .section-title {
+    font-size: 24px;
+    margin: 48px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* --- Quick Start --- */
+  .quickstart {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px 0;
+  }
+
+  .quickstart h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--green);
+  }
+
+  .quickstart code {
+    display: block;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: var(--text);
+    overflow-x: auto;
+  }
+
+  .quickstart p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin: 8px 0;
+  }
+
+  /* --- Groups --- */
+  .groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .group-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .group-card h4 {
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: var(--purple);
+  }
+
+  .group-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .group-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .group-skill-link {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    padding: 2px 10px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 12px;
+    transition: background 0.15s;
+  }
+
+  .group-skill-link:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* --- Skill Cards --- */
+  .skill-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+    transition: border-color 0.15s;
+  }
+
+  .skill-card:target {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+
+  .skill-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .skill-header h3 {
+    font-size: 20px;
+    color: var(--text);
+  }
+
+  .version {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+  }
+
+  .skill-desc {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .skill-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .tag {
+    background: #2ea04333;
+    color: var(--green);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+
+  .tools {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-style: italic;
+    margin-left: auto;
+  }
+
+  details {
+    margin-top: 8px;
+  }
+
+  summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-size: 13px;
+    padding: 4px 0;
+    user-select: none;
+  }
+
+  summary:hover {
+    text-decoration: underline;
+  }
+
+  .skill-body {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 12px;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: var(--text-muted);
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  /* --- CLI Reference --- */
+  .cli-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+  }
+
+  .cli-table th, .cli-table td {
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .cli-table th {
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .cli-table td:first-child {
+    font-family: monospace;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* --- Footer --- */
+  .footer {
+    margin-top: 64px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 768px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .sidebar {
+      position: static;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .main {
+      padding: 24px;
+    }
+    .stat-row {
+      flex-wrap: wrap;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <h1>Claude Public Skills</h1>
+  <p class="subtitle">10 skills available</p>
+
+  <h2>Navigation</h2>
+  <a href="#quickstart" class="nav-link">Quick Start</a>
+  <a href="#groups" class="nav-link">Groups</a>
+  <a href="#cli" class="nav-link">CLI Reference</a>
+
+  <h2>Skills</h2>
+  <a href="#skill-changelog" class="nav-skill">changelog</a><a href="#skill-create-skill" class="nav-skill">create-skill</a><a href="#skill-cross-skill-patterns" class="nav-skill">cross-skill-patterns</a><a href="#skill-explain" class="nav-skill">explain</a><a href="#skill-improve-skill" class="nav-skill">improve-skill</a><a href="#skill-loglog" class="nav-skill">loglog</a><a href="#skill-review" class="nav-skill">review</a><a href="#skill-skill-audit" class="nav-skill">skill-audit</a><a href="#skill-skill-management" class="nav-skill">skill-management</a><a href="#skill-synthesize-learnings" class="nav-skill">synthesize-learnings</a>
+</nav>
+<main class="main">
+
+<div class="hero">
+  <h1>Claude Public Skills</h1>
+  <p>A collection of reusable Claude Code skills you can install into any project. Browse, pick what you need, and get started in seconds.</p>
+  <div class="stat-row">
+    <div class="stat"><div class="num">10</div><div class="label">Skills</div></div>
+    <div class="stat"><div class="num">3</div><div class="label">Groups</div></div>
+    <div class="stat"><div class="num">0</div><div class="label">Dependencies</div></div>
+  </div>
+</div>
+
+<h2 id="quickstart" class="section-title">Quick Start</h2>
+
+<div class="quickstart">
+  <h3>Install skills into your project</h3>
+  <code>git clone &lt;repo-url&gt; &amp;&amp; cd claude_public_skills</code>
+  <p>Install a single skill globally:</p>
+  <code>./skill.sh install changelog --global</code>
+  <p>Or link all skills (live updates with git pull):</p>
+  <code>./skill.sh link --all --global</code>
+</div>
+
+<div class="quickstart">
+  <h3>Create a new skill</h3>
+  <code>./skill.sh new my-skill-name</code>
+  <p>Edit <code>skills/my-skill-name/SKILL.md</code>, then rebuild:</p>
+  <code>./skill.sh build-manifest</code>
+</div>
+
+<h2 id="groups" class="section-title">Skill Groups</h2>
+<div class="groups-grid">
+  
+            <div class="group-card">
+              <h4>dev-tools</h4>
+              <p>Development workflow skills</p>
+              <div class="group-skills"><a href="#skill-changelog" class="group-skill-link">changelog</a><a href="#skill-review" class="group-skill-link">review</a></div>
+            </div>
+            <div class="group-card">
+              <h4>documentation</h4>
+              <p>Documentation and explanation skills</p>
+              <div class="group-skills"><a href="#skill-explain" class="group-skill-link">explain</a><a href="#skill-loglog" class="group-skill-link">loglog</a><a href="#skill-changelog" class="group-skill-link">changelog</a></div>
+            </div>
+            <div class="group-card">
+              <h4>skill-meta</h4>
+              <p>Skills for creating, improving, and managing other skills</p>
+              <div class="group-skills"><a href="#skill-create-skill" class="group-skill-link">create-skill</a><a href="#skill-improve-skill" class="group-skill-link">improve-skill</a><a href="#skill-skill-audit" class="group-skill-link">skill-audit</a><a href="#skill-cross-skill-patterns" class="group-skill-link">cross-skill-patterns</a><a href="#skill-synthesize-learnings" class="group-skill-link">synthesize-learnings</a><a href="#skill-skill-management" class="group-skill-link">skill-management</a></div>
+            </div>
+</div>
+
+<h2 class="section-title">All Skills</h2>
+
+    <section id="skill-changelog" class="skill-card">
+      <div class="skill-header">
+        <h3>changelog</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Generate changelog entries from git commits. Use when asked to create or update a changelog, release notes, or summarize changes.</p>
+      <div class="skill-meta">
+        <span class="tag">git</span><span class="tag">documentation</span>
+        <span class="tools" title="Allowed tools">Read, Write, Edit, Bash</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Changelog Generation Skill
+
+Generate structured changelog entries from git history.
+
+## How to Use
+
+- `/changelog` - Generate from unreleased commits (since last tag)
+- `/changelog v1.2.0` - Generate for specific version
+- `/changelog v1.1.0..v1.2.0` - Generate for commit range
+- `/changelog --since=2024-01-01` - Generate since date
+
+## Process
+
+### 1. Gather Commits
+
+```bash
+# Since last tag
+git log $(git describe --tags --abbrev=0)..HEAD --oneline
+
+# For a range
+git log $ARGUMENTS --oneline
+
+# With details
+git log --pretty=format:"%h %s" $ARGUMENTS
+```
+
+### 2. Categorize Changes
+
+Group commits into these categories:
+
+| Category | Prefix in commits | Description |
+|----------|-------------------|-------------|
+| Added | feat:, add: | New features |
+| Changed | change:, update:, refactor: | Changes to existing functionality |
+| Fixed | fix:, bugfix: | Bug fixes |
+| Removed | remove:, delete: | Removed features |
+| Security | security: | Security fixes |
+| Deprecated | deprecate: | Soon-to-be removed features |
+
+### 3. Output Format
+
+Use [Keep a Changelog](https://keepachangelog.com/) format:
+
+```markdown
+## [Version] - YYYY-MM-DD
+
+### Added
+- New feature description (#PR)
+
+### Changed
+- Change description (#PR)
+
+### Fixed
+- Bug fix description (#PR)
+
+### Removed
+- Removed feature description
+
+### Security
+- Security fix description
+```
+
+### 4. Update CHANGELOG File
+
+If `CHANGELOG.md` exists:
+1. Read existing content
+2. Insert new version section after the header
+3. Preserve existing entries
+
+If no changelog exists:
+1. Create `CHANGELOG.md` with header
+2. Add the new version section
+
+## Changelog Header Template
+
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+```
+
+## Tips
+
+- Write for users, not developers
+- Focus on *what* changed, not *how*
+- Link to PRs/issues when available
+- Group related changes together
+- Use active voice: "Add feature" not "Added feature" or "Feature was added"
+</pre>
+      </details>
+    </section>
+    <section id="skill-create-skill" class="skill-card">
+      <div class="skill-header">
+        <h3>create-skill</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Draft a new skill from a task description, following best practices for skill structure and composability.</p>
+      <div class="skill-meta">
+        <span class="tag">meta</span><span class="tag">skill-development</span>
+        <span class="tools" title="Allowed tools">Read, Write, Edit, Glob, Grep</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Create Skill
+
+Draft a new skill file from a natural language description of the task it should perform.
+
+## Usage
+
+`/create-skill "<lt;description of what this skill should do>gt;"`
+
+Examples:
+- `/create-skill "lint YAML files and report errors"`
+- `/create-skill "generate API documentation from code comments"`
+- `/create-skill "run database migrations safely"`
+
+## Process
+
+### Step 1 — Understand the task
+
+From the description, identify:
+1. **Inputs**: What arguments or data does this skill take?
+2. **Outputs**: What does it produce (file, report, terminal output)?
+3. **Steps**: What is the high-level process?
+4. **Tools needed**: Which Claude Code tools does it use?
+
+If the description is ambiguous, ask one clarifying question before proceeding.
+
+### Step 2 — Check for overlap
+
+Scan existing skills:
+- `skills/*/SKILL.md` (if in a skill repo)
+- `.claude/skills/*/SKILL.md` (if in a project)
+
+If an existing skill already covers this task (even partially), report:
+>gt; "The skill `<lt;name>gt;` already covers <lt;overlap>gt;. Consider using `/improve-skill <lt;name>gt;` to extend it instead."
+
+Only proceed if the task is genuinely new.
+
+### Step 3 — Choose a name
+
+- Use lowercase, hyphenated names
+- Verb-noun or descriptive noun pattern
+- Examples: `lint-yaml`, `generate-docs`, `run-migrations`
+
+### Step 4 — Draft the SKILL.md
+
+Follow this structure:
+
+```yaml
+---
+name: <lt;name>gt;
+description: <lt;one-line description>gt;
+allowed-tools: <lt;tools this skill needs>gt;
+argument-hint: [expected arguments]
+tags: [relevant, tags]
+version: 0.1.0
+---
+```
+
+Body should include:
+1. **Title** — `# <lt;Name>gt;`
+2. **Usage** — how to invoke with examples
+3. **Process** — step-by-step instructions (minimum 3 steps)
+4. **At least one worked example** — showing input → output
+5. **Edge cases** — what to do when things go wrong
+6. **References** — other skills this composes or depends on
+
+### Step 5 — Check composability
+
+- Does this skill build on existing skills? Reference them explicitly.
+- Could existing skills benefit from knowing about this one? Note which ones.
+
+### Step 6 — Write the file
+
+Write the skill file to disk. If in a skill repo with `skill.sh`, run `./skill.sh build-manifest` afterward.
+
+Report the file path created and a brief summary.
+
+## What Makes a Good Skill
+
+- Clear, specific scope — does one thing well
+- Has at least one worked example
+- Explains edge cases and what to do when things go wrong
+- References existing skills rather than duplicating them
+- Uses `$ARGUMENTS` for parameterization where appropriate
+- Keeps instructions unambiguous — no room for misinterpretation
+</pre>
+      </details>
+    </section>
+    <section id="skill-cross-skill-patterns" class="skill-card">
+      <div class="skill-header">
+        <h3>cross-skill-patterns</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Read all skills and extract cross-cutting patterns, knowledge asymmetries, redundancy, and transferable insights.</p>
+      <div class="skill-meta">
+        <span class="tag">meta</span><span class="tag">quality</span>
+        <span class="tools" title="Allowed tools">Read, Glob, Grep</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Cross-Skill Pattern Extraction
+
+Read all skill files holistically to find patterns that span multiple skills — knowledge that should be shared but isn't, repeated content that could be extracted, and structural patterns that work well in some skills but are absent where they'd help.
+
+## Usage
+
+```
+/cross-skill-patterns
+```
+
+No arguments. Always analyses all skills.
+
+## Process
+
+### Step 1 — Read all skills
+
+Read every `SKILL.md` file in the skills directory. Build a mental model of the full skill corpus before identifying patterns.
+
+### Step 2 — Apply analysis lenses
+
+#### Lens A: Repeated Warnings / Common Pitfalls
+
+Look for warnings or cautionary notes that appear in multiple skills. If the same warning appears in 2+ skills, it's a cross-cutting pitfall that may be under-documented elsewhere.
+
+```
+Pattern: <lt;name>gt;
+Appears in: skill-a, skill-b
+Missing from: skill-c, skill-d
+Recommendation: <lt;action>gt;
+```
+
+#### Lens B: Knowledge Asymmetries
+
+Skill A knows something that Skill B needs but doesn't have. Look for guidance in one skill that would benefit a related skill.
+
+```
+Asymmetry: <lt;description>gt;
+Transfer: <lt;what to move where>gt;
+```
+
+#### Lens C: Extractable Shared Content
+
+If 3+ skills contain similar blocks (boilerplate, format templates, common patterns), that content is a candidate for extraction into a shared skill or reference.
+
+```
+Redundancy: <lt;description>gt;
+Action: <lt;extract to shared location>gt;
+```
+
+#### Lens D: Structural Patterns That Work
+
+Identify sections, formats, or structural choices that make some skills clearer than others, and which skills would benefit from adopting them.
+
+```
+Good pattern: <lt;description>gt; in <lt;skill>gt;
+Missing from: <lt;skills that would benefit>gt;
+Recommendation: <lt;action>gt;
+```
+
+#### Lens E: Vocabulary Inconsistencies
+
+Look for the same concept described differently across skills — different names, conflicting guidance, or inconsistent terminology.
+
+```
+Inconsistency: <lt;description>gt;
+Recommendation: <lt;standardize on X>gt;
+```
+
+### Step 3 — Rank patterns by impact
+
+- **High**: affects 5+ skills OR blocks a workflow OR creates incorrect output
+- **Medium**: affects 2-4 skills OR creates confusion
+- **Low**: affects 1 skill OR cosmetic
+
+### Step 4 — Produce the report
+
+```
+## Cross-Skill Pattern Report — <lt;date>gt;
+
+### High-Impact Patterns
+1. <lt;pattern>gt;
+   Affects: <lt;skills>gt;
+   Type: <lt;asymmetry|redundancy|pitfall|structural|vocabulary>gt;
+   Recommendation: <lt;action>gt;
+
+### Medium-Impact Patterns
+...
+
+### Transferable Knowledge Summary
+Top pieces of knowledge that should be propagated:
+1. ...
+
+### Skills That Could Be Simplified
+- <lt;skill>gt;: <lt;what could be referenced instead of repeated>gt;
+```
+</pre>
+      </details>
+    </section>
+    <section id="skill-explain" class="skill-card">
+      <div class="skill-header">
+        <h3>explain</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Explain code with analogies, diagrams, and step-by-step walkthroughs. Use when asked to explain how code works, document complex logic, or onboard someone to a codebase.</p>
+      <div class="skill-meta">
+        <span class="tag">documentation</span><span class="tag">learning</span>
+        <span class="tools" title="Allowed tools">Read, Grep, Glob</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Code Explanation Skill
+
+Explain code clearly using multiple techniques for understanding.
+
+## How to Use
+
+- `/explain auth.py` - Explain a file
+- `/explain handleRequest` - Explain a function
+- `/explain "the caching system"` - Explain a concept/subsystem
+
+## Explanation Framework
+
+### 1. Start with the Big Picture
+
+Before diving into code, answer:
+- **What** does this code do? (1 sentence)
+- **Why** does it exist? (the problem it solves)
+- **Where** does it fit in the system?
+
+### 2. Use an Analogy
+
+Connect to something familiar:
+
+```
+"This authentication middleware is like a bouncer at a club:
+- Checks your ID (validates token)
+- Looks you up on the list (verifies permissions)
+- Either lets you in or turns you away (allow/deny)"
+```
+
+Good analogy sources:
+- Physical world processes (factory, mail delivery, library)
+- Social interactions (conversation, delegation)
+- Games (rules, turns, scoring)
+
+### 3. Draw a Diagram
+
+Use ASCII diagrams for flow and structure:
+
+```
+Request Flow:
+
+  Client ──► Middleware ──► Handler ──► Database
+              │                            │
+              │   (validates)              │
+              ▼                            ▼
+           [Token] ◄──────────────── [User Data]
+```
+
+```
+Component Structure:
+
+┌─────────────────────────────────┐
+│           Application           │
+├─────────────┬───────────────────┤
+│   Router    │     Services      │
+├─────────────┼───────────────────┤
+│  Handlers   │   Repositories    │
+└─────────────┴───────────────────┘
+```
+
+### 4. Walk Through Step-by-Step
+
+Number the steps and trace the execution:
+
+```
+1. Request arrives at /api/users
+2. Router matches to handleGetUsers()
+3. Handler extracts query params
+4. Repository.findAll() queries database
+5. Results mapped to response format
+6. JSON sent back to client
+```
+
+Include relevant line numbers: `auth.py:42`
+
+### 5. Highlight Gotchas
+
+Call out non-obvious behavior:
+
+```
+⚠️ Watch out:
+- This function mutates the input array
+- Exceptions here are caught silently
+- Cache expires after 5 minutes (see config.py:12)
+```
+
+### 6. Provide Entry Points
+
+For complex systems, suggest where to start:
+
+```
+Key files to understand this system:
+1. config.py - All settings and constants
+2. models.py - Data structures
+3. handlers.py - Main logic entry points
+```
+
+## Output Structure
+
+```
+## [Name/Component]
+
+**Purpose**: One-line description
+
+**Analogy**: [Familiar comparison]
+
+**How it works**:
+[ASCII diagram]
+
+**Step-by-step**:
+1. First...
+2. Then...
+
+**Key files**:
+- file.py:123 - Description
+
+**Gotchas**:
+- Warning about non-obvious behavior
+```
+
+## Tips
+
+- Assume the reader is smart but unfamiliar with this specific code
+- Explain *why*, not just *what*
+- Use concrete examples over abstract descriptions
+- Keep diagrams simple - clarity over completeness
+- Link to source: `file.py:42` format
+</pre>
+      </details>
+    </section>
+    <section id="skill-improve-skill" class="skill-card">
+      <div class="skill-header">
+        <h3>improve-skill</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Review and improve an existing skill file — analyze clarity, completeness, and accuracy, then apply fixes.</p>
+      <div class="skill-meta">
+        <span class="tag">meta</span><span class="tag">skill-development</span>
+        <span class="tools" title="Allowed tools">Read, Write, Edit, Glob, Grep</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Improve Skill
+
+Review an existing skill, analyze it against quality criteria, and produce an improved version.
+
+## Usage
+
+`/improve-skill <lt;skill-name>gt;`
+
+Examples:
+- `/improve-skill changelog`
+- `/improve-skill review`
+
+## Process
+
+### Step 1 — Locate and read the skill
+
+Find the skill file:
+- `skills/<lt;name>gt;/SKILL.md` (in a skill repo)
+- `.claude/skills/<lt;name>gt;/SKILL.md` (in a project)
+
+Read the file in full.
+
+### Step 2 — Analyze the skill
+
+Review against these criteria:
+
+1. **Clarity**: Are instructions unambiguous? Could any step be misinterpreted?
+2. **Completeness**: Are there obvious missing cases or scenarios?
+3. **Accuracy**: Is any information outdated (URLs, tool names, methodology)?
+4. **Redundancy**: Are any sections repeated or contradictory?
+5. **Composability**: Does the skill properly reference other skills it depends on?
+6. **Format**: Is the YAML frontmatter complete? Are code blocks formatted correctly?
+7. **Examples**: Are examples realistic, correct, and sufficient?
+8. **Edge cases**: Does the skill handle error conditions and unusual inputs?
+
+### Step 3 — Propose changes
+
+Present a tracked changes summary:
+
+```
+## Proposed Changes to <lt;name>gt;
+
+### Issues found:
+- Step 3 is ambiguous — could be interpreted two ways → Rewriting for clarity
+- Missing: no guidance for empty input → Adding edge case section
+- Redundant: Steps 4 and 6 describe the same validation → Merging
+
+### Preserved:
+- Core workflow (Steps 1-3) is clear and complete
+- Examples are accurate
+```
+
+### Step 4 — Apply improvements
+
+Write the improved file. Report what changed:
+```
+Updated skills/<lt;name>gt;/SKILL.md:
+- Clarified Step 3 instructions
+- Added edge case handling for empty input
+- Merged redundant validation steps
+```
+
+## What NOT to Do
+
+- Do not add complexity for its own sake — simpler is better
+- Do not change the core purpose of a skill
+- Do not invent problems that don't exist
+- Do not rewrite a skill that is already clear and complete
+</pre>
+      </details>
+    </section>
+    <section id="skill-loglog" class="skill-card">
+      <div class="skill-header">
+        <h3>loglog</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Use when creating documentation, notes, status files, or any .log files. Loglog is a hierarchical plain-text documentation format that converts to markdown, HTML, LaTeX, and PDF.</p>
+      <div class="skill-meta">
+        <span class="tag">documentation</span><span class="tag">format</span>
+        <span class="tools" title="Allowed tools">Read, Write, Edit, Bash</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Loglog Documentation Format
+
+When creating documentation, notes, or status tracking files, use the loglog format with `.log` extension.
+
+## Core Syntax
+
+### Hierarchical Lists
+Everything is a list. Use dashes (`-`) with 4-space indentation per level:
+
+```
+- Item at depth 0
+    - Item at depth 1
+        - Item at depth 2
+    - Another depth 1 item
+- Back to depth 0
+```
+
+### TODO Markers
+Track tasks with bracket notation at the start of items:
+
+```
+- [] Pending task
+- [x] Completed task
+- [?] Unknown status
+```
+
+### Hashtags for Filtering
+Tag content for organization and extraction:
+
+```
+- Important decision #decision #important
+- Meeting notes #meeting
+```
+
+## File Naming
+- Use `.log` extension: `STATUS.log`, `notes.log`, `project.log`
+- Keep names lowercase and descriptive
+
+## Conversion Commands
+
+```bash
+# Convert to markdown (most common)
+loglog convert file.log --to markdown
+loglog file.log >gt; file.md          # shorthand
+
+# Other formats
+loglog convert file.log --to html   # Interactive HTML
+loglog convert file.log --to latex
+loglog convert file.log --to pdf
+```
+
+## Python API
+
+```python
+from loglog import to_md_file, to_html_file
+
+to_md_file('notes.log')      # Creates notes.md
+to_html_file('notes.log')    # Creates interactive HTML
+```
+
+## Example STATUS.log
+
+```
+- Project Status
+    - Name: My Project
+    - Stage: MVP
+    - Last Updated: 2024-01-15
+    - Development Mode: Claude Code
+
+- Current Sprint #sprint
+    - [] Implement user authentication
+    - [x] Set up database schema
+    - [?] Review API design
+
+- Notes #notes
+    - Decision: Using PostgreSQL for persistence #decision
+    - Next milestone: Beta release
+```
+
+## Key Principles
+
+1. **Everything is a list** - Even list items contain lists
+2. **Plain text first** - Write content, organize structure later via indentation
+3. **Foldable** - Most editors support collapsing nested sections
+4. **Convertible** - Transform to markdown/HTML/PDF when needed
+
+## Installation
+
+```bash
+pip install loglog
+# or
+cargo install loglog
+```
+
+When asked to create documentation, status files, or notes in this project, default to loglog format unless the user specifies otherwise.
+</pre>
+      </details>
+    </section>
+    <section id="skill-review" class="skill-card">
+      <div class="skill-header">
+        <h3>review</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Review code changes for quality, security, performance, and style issues. Use when asked to review code, PRs, or diffs.</p>
+      <div class="skill-meta">
+        <span class="tag">code-quality</span><span class="tag">git</span>
+        <span class="tools" title="Allowed tools">Read, Bash, Grep, Glob</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Code Review Skill
+
+When reviewing code, follow this systematic checklist.
+
+## How to Use
+
+- `/review` - Review staged changes (git diff --cached)
+- `/review file.py` - Review specific file
+- `/review 123` - Review PR #123 (requires gh CLI)
+
+## Review Process
+
+### 1. Gather Context
+First, understand what changed:
+```bash
+# For staged changes
+git diff --cached
+
+# For PR
+gh pr diff $ARGUMENTS
+```
+
+### 2. Review Checklist
+
+#### Security
+- [ ] No hardcoded secrets, API keys, or credentials
+- [ ] Input validation on user-provided data
+- [ ] No SQL injection vulnerabilities (parameterized queries)
+- [ ] No XSS vulnerabilities (escaped output)
+- [ ] No command injection (sanitized shell inputs)
+- [ ] Proper authentication/authorization checks
+
+#### Logic &amp; Correctness
+- [ ] Code does what it's supposed to do
+- [ ] Edge cases handled (null, empty, boundary values)
+- [ ] Error handling is appropriate
+- [ ] No obvious bugs or typos
+- [ ] No race conditions or deadlocks
+
+#### Performance
+- [ ] No N+1 queries or unnecessary loops
+- [ ] Efficient algorithms for data size
+- [ ] No memory leaks (cleanup in finally/defer)
+- [ ] Appropriate caching if needed
+
+#### Code Quality
+- [ ] Follows project conventions
+- [ ] Clear naming (variables, functions)
+- [ ] No dead code or commented-out code
+- [ ] DRY - no unnecessary duplication
+- [ ] Functions are focused (single responsibility)
+
+#### Testing
+- [ ] New code has appropriate tests
+- [ ] Tests cover happy path and edge cases
+- [ ] Existing tests still pass
+
+### 3. Output Format
+
+Provide findings in this format:
+
+```
+## Review Summary
+
+**Files reviewed**: [list]
+**Risk level**: [Low/Medium/High]
+
+### Issues Found
+
+#### Critical
+- [file:line] Description of critical issue
+
+#### Suggestions
+- [file:line] Suggested improvement
+
+### What's Good
+- Positive observations
+
+### Verdict
+[ ] Approve
+[ ] Request changes
+[ ] Needs discussion
+```
+
+## Notes
+
+- Be constructive, not critical
+- Explain *why* something is an issue
+- Suggest fixes, don't just point out problems
+- Acknowledge good patterns when you see them
+</pre>
+      </details>
+    </section>
+    <section id="skill-skill-audit" class="skill-card">
+      <div class="skill-header">
+        <h3>skill-audit</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Structural analysis of skill files — scores completeness, flags broken references, identifies missing sections.</p>
+      <div class="skill-meta">
+        <span class="tag">meta</span><span class="tag">quality</span>
+        <span class="tools" title="Allowed tools">Read, Glob, Grep</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Skill Audit
+
+Read skill files and score each one against a structural completeness rubric. This is a *structural* audit — it evaluates the quality of the skill documentation, not whether the underlying process is correct.
+
+## Usage
+
+```
+/skill-audit           # audit all skills
+/skill-audit changelog # audit a single skill
+```
+
+## Process
+
+### Step 1 — Build the file inventory
+
+Find all skill files:
+- `skills/*/SKILL.md` (in a skill repo)
+- `.claude/skills/*/SKILL.md` (in a project)
+
+### Step 2 — Score each skill
+
+Apply this rubric. Score each criterion 0 (absent) or 1 (present):
+
+| Criterion | Weight |
+|-----------|--------|
+| Has valid YAML frontmatter (name, description, version) | 1 |
+| Has a clear one-sentence purpose statement | 1 |
+| Has explicit input/argument documentation | 1 |
+| Has step-by-step process (at least 3 steps) | 1 |
+| Has at least one worked example or sample output | 2 |
+| References other skills it depends on (or states "none") | 1 |
+| Has edge case / error handling guidance | 2 |
+| Has tags in frontmatter | 1 |
+| Has allowed-tools in frontmatter | 1 |
+
+**Maximum score: 11**
+
+### Step 3 — Check cross-references
+
+For every skill referenced inside a file, verify the referenced skill actually exists. Flag broken references.
+
+### Step 4 — Produce the audit report
+
+```
+## Skill Audit Report — <lt;date>gt;
+
+### Summary
+Total skills: N
+Average score: X/11 (Z%)
+Skills below 50%: N
+Broken references: N
+
+### Per-Skill Scores (sorted ascending — lowest first)
+| Skill | Score | Missing |
+|-------|-------|---------|
+| example-skill | 6/11 | examples, edge cases |
+| ...           |      |         |
+
+### Broken References
+- <lt;skill>gt; references `<lt;other>gt;` — file does not exist
+
+### Top Priorities
+1. <lt;skill>gt; — missing: <lt;list>gt; (score: X/11)
+2. ...
+```
+
+## What This Is Not
+
+- Does not evaluate whether skill *content* is correct
+- Does not run skills to test them
+- Purely static document analysis
+</pre>
+      </details>
+    </section>
+    <section id="skill-skill-management" class="skill-card">
+      <div class="skill-header">
+        <h3>skill-management</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Full skill system health analysis — orchestrates audit, pattern extraction, and learnings synthesis into a unified report with prioritised actions.</p>
+      <div class="skill-meta">
+        <span class="tag">meta</span><span class="tag">quality</span><span class="tag">orchestration</span>
+        <span class="tools" title="Allowed tools">Read, Write, Glob, Grep</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Skill Management
+
+The top-level orchestrator for skill system improvement. Runs a full analysis — structural quality, cross-skill patterns, and learning synthesis — and produces a prioritised action plan.
+
+## Usage
+
+```
+/skill-management          # produce health report only
+/skill-management --act    # report + auto-improve top 3 skills
+```
+
+## Process
+
+### Step 1 — Run structural audit
+
+Invoke the `skill-audit` skill (no argument — full audit).
+
+Collect:
+- Per-skill scores and missing sections
+- Broken cross-references
+
+### Step 2 — Extract cross-skill patterns
+
+Invoke `cross-skill-patterns`.
+
+Collect:
+- Ranked patterns (high/medium/low impact)
+- Knowledge asymmetries and transferable insights
+- Redundancy candidates
+- Vocabulary inconsistencies
+
+### Step 3 — Synthesize learnings
+
+Invoke `synthesize-learnings`.
+
+Collect:
+- Cross-cutting themes from documented learnings
+- Hypotheses for undocumented skills
+- Positive patterns to preserve
+
+### Step 4 — Build the unified priority list
+
+Combine findings into a single ranked list.
+
+**Scoring:**
+| Signal | Points |
+|--------|--------|
+| Structural audit score <lt; 50% | +3 |
+| Identified in a high-impact cross-skill pattern | +3 |
+| Identified in a high-impact cross-cutting theme | +3 |
+| Has documented learnings waiting to be applied | +2 |
+| Referenced by many other skills (hub skill) | +1 |
+
+Sort by total score descending.
+
+### Step 5 — Produce the Health Report
+
+```
+## Skill System Health Report — <lt;date>gt;
+
+### Overall Health
+Skills analysed: N
+Average structural score: X% (target: >gt;=80%)
+Skills below 50%: N
+High-impact patterns found: N
+
+### Priority Improvement Queue
+| Rank | Skill | Score | Primary reasons |
+|------|-------|-------|-----------------|
+| 1 | ... | 9 | structural 40%, pattern match |
+| 2 | ... | 7 | vocabulary inconsistency |
+
+### Cross-Skill Insights (Top 3)
+1. <lt;Theme/Pattern>gt;
+   Affects: N skills
+   Action: <lt;specific change>gt;
+
+### What's Working Well (preserve)
+- <lt;skill>gt;: <lt;positive pattern>gt;
+
+### Recommended Actions
+1. Run /improve-skill <lt;skill>gt; (highest impact)
+2. Propagate <lt;pattern>gt; to: <lt;skills>gt;
+3. ...
+```
+
+### Step 6 — Act (if --act flag)
+
+If `--act` was passed, automatically run `/improve-skill` on the top 3 ranked skills. Report each as it completes.
+
+## Self-Application
+
+This skill is subject to its own analysis. When it identifies issues with skill-audit, cross-skill-patterns, synthesize-learnings, or itself, use `/improve-skill` to fix them.
+
+## When to Run
+
+- After creating several new skills
+- After many sessions using skills
+- When workflows feel inconsistent
+- Periodically (every few months of active use)
+</pre>
+      </details>
+    </section>
+    <section id="skill-synthesize-learnings" class="skill-card">
+      <div class="skill-header">
+        <h3>synthesize-learnings</h3>
+        <span class="version">v1.0.0</span>
+      </div>
+      <p class="skill-desc">Meta-analyse usage patterns and session history to extract cross-cutting themes and improvement hypotheses for skills.</p>
+      <div class="skill-meta">
+        <span class="tag">meta</span><span class="tag">quality</span>
+        <span class="tools" title="Allowed tools">Read, Glob, Grep</span>
+      </div>
+      <details>
+        <summary>View full skill instructions</summary>
+        <pre class="skill-body">
+# Synthesize Learnings
+
+Analyse documented learnings, usage history, and session notes to find patterns that cut across skills — themes that individual skill improvements would miss, and hypotheses for skills that lack documented feedback.
+
+## Usage
+
+```
+/synthesize-learnings
+```
+
+No arguments. Analyses all available learnings.
+
+## Process
+
+### Step 1 — Gather learning sources
+
+Look for learning/feedback data in these locations:
+- `learnings/*.md` or `meta/learnings/*.md` (if the project tracks learnings)
+- Git commit messages mentioning skill names
+- Any `CHANGELOG.md` entries related to skills
+- Session notes or retrospectives if available
+
+For each entry found, tag it:
+- **Skill name**: which skill it relates to
+- **Type**: `gap` (missing content), `confusion` (ambiguous instruction), `edge_case` (unhandled scenario), `outdated` (stale info), `friction` (unnecessary complexity), `worked_well` (preserve this)
+- **Scope**: `local` (specific to one skill) or `generalizable` (applies to others)
+
+### Step 2 — Find cross-cutting themes
+
+Group generalizable learnings by theme. Common theme types:
+- **Repeated confusion**: Multiple skills have the same ambiguity
+- **Missing edge cases**: Similar error conditions unhandled across skills
+- **Structural gaps**: A useful section in one skill that others lack
+- **Positive patterns**: Things that work well and should be preserved everywhere
+
+### Step 3 — Hypothesize for skills without learnings
+
+For skills with no documented learnings, apply inference:
+1. **Analogy**: Does this skill resemble one that has learnings? Similar issues likely apply.
+2. **Structural**: Does this skill have patterns (complex multi-step, external dependencies) known to generate confusion?
+3. **Usage frequency**: Frequently-used skills likely have undocumented friction.
+
+### Step 4 — Produce the synthesis report
+
+```
+## Learnings Synthesis — <lt;date>gt;
+
+### Sources Analyzed
+Files read: N
+Total entries: N
+Generalizable: N (X%)
+
+### Cross-Cutting Themes
+
+#### Theme 1: <lt;name>gt; (High/Medium/Low impact)
+Skills with evidence: <lt;list>gt;
+Skills likely affected: <lt;list>gt;
+Insight: <lt;what this means>gt;
+Action: <lt;recommended fix>gt;
+
+### Hypotheses for Undocumented Skills
+| Skill | Basis | Hypotheses | Priority |
+|-------|-------|-----------|---------|
+| ... | analogy | ... | medium |
+
+### Positive Patterns to Preserve
+- <lt;skill>gt;: <lt;what works well>gt;
+
+### Recommended Actions
+1. Propagate Theme 1 fix to: <lt;skills>gt;
+2. Start logging learnings for: <lt;high-use skills>gt;
+3. Run /improve-skill on: <lt;skills with most issues>gt;
+```
+
+## When to Run
+
+- After several sessions using skills (enough friction to surface patterns)
+- When workflows feel inconsistent
+- Periodically to catch drift
+</pre>
+      </details>
+    </section>
+
+<h2 id="cli" class="section-title">CLI Reference</h2>
+<table class="cli-table">
+  <tr><th>Command</th><th>Description</th></tr>
+  <tr><td>./skill.sh list</td><td>List all skills and groups</td></tr>
+  <tr><td>./skill.sh info &lt;skill&gt;</td><td>Show skill details</td></tr>
+  <tr><td>./skill.sh install &lt;skill|group&gt; &lt;target&gt;</td><td>Copy skill(s) to target</td></tr>
+  <tr><td>./skill.sh link &lt;skill|group&gt; &lt;target&gt;</td><td>Symlink skill(s) to target</td></tr>
+  <tr><td>./skill.sh uninstall &lt;skill|group&gt; &lt;target&gt;</td><td>Remove skill(s) from target</td></tr>
+  <tr><td>./skill.sh new &lt;name&gt;</td><td>Scaffold a new skill from template</td></tr>
+  <tr><td>./skill.sh build-manifest</td><td>Regenerate manifest.json</td></tr>
+  <tr><td>./skill.sh validate</td><td>Check manifest and groups are in sync</td></tr>
+  <tr><td>./skill.sh init</td><td>Install git pre-commit hook</td></tr>
+</table>
+<p style="color: var(--text-muted); font-size: 13px; margin-top: 8px;">
+  <strong>Targets:</strong> <code>--global</code> / <code>-g</code> (installs to ~/.claude/skills/) or a path<br>
+  <strong>Flags:</strong> <code>--force</code> / <code>-f</code> (skip prompts), <code>--all</code> (apply to all skills)
+</p>
+
+<div class="footer">
+  Generated on 2026-03-16 &middot;
+  <a href="https://github.com">View on GitHub</a> &middot;
+  Built with <a href="https://claude.ai/claude-code">Claude Code</a>
+</div>
+
+</main>
+</div>
+</body>
+</html>
