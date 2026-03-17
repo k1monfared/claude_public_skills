@@ -9,6 +9,6 @@
   },
   "skill-meta": {
     "description": "Skills for creating, improving, and managing other skills",
-    "skills": ["create-skill", "improve-skill", "skill-audit", "cross-skill-patterns", "synthesize-learnings", "skill-management"]
+    "skills": ["create-skill", "improve-skill", "extract-skills", "skill-audit", "cross-skill-patterns", "synthesize-learnings", "skill-management"]
   }
 }
