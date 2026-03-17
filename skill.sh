@@ -652,7 +652,52 @@ cmd_validate() {
     success "Validation passed"
     return 0
 }
-cmd_init() { error "Not yet implemented"; exit 1; }
+cmd_init() {
+    local git_dir="$SCRIPT_DIR/.git"
+    if [[ ! -d "$git_dir" ]]; then
+        error "Not a git repository"
+        exit 1
+    fi
+
+    local hook_dir="$git_dir/hooks"
+    local hook_file="$hook_dir/pre-commit"
+
+    mkdir -p "$hook_dir"
+
+    if [[ -f "$hook_file" ]]; then
+        if grep -q "skill.sh" "$hook_file"; then
+            info "Pre-commit hook already installed"
+            return 0
+        fi
+        warn "Existing pre-commit hook found"
+        if ! confirm "Append skill.sh checks to existing hook?"; then
+            info "Skipping hook installation"
+            return 0
+        fi
+        cat >> "$hook_file" <<'HOOK'
+
+# --- skill.sh manifest sync ---
+REPO_DIR="$(git rev-parse --show-toplevel)"
+"$REPO_DIR/skill.sh" build-manifest
+git add "$REPO_DIR/manifest.json"
+"$REPO_DIR/skill.sh" validate
+HOOK
+    else
+        cat > "$hook_file" <<'HOOK'
+#!/usr/bin/env bash
+set -euo pipefail
+
+# --- skill.sh manifest sync ---
+REPO_DIR="$(git rev-parse --show-toplevel)"
+"$REPO_DIR/skill.sh" build-manifest
+git add "$REPO_DIR/manifest.json"
+"$REPO_DIR/skill.sh" validate
+HOOK
+    fi
+
+    chmod +x "$hook_file"
+    success "Pre-commit hook installed at $hook_file"
+}
 
 # --- Main ---
 parse_args "$@"

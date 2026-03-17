@@ -226,6 +226,32 @@ assert_file_exists "foreign skill preserved" "$FOREIGN_DIR/.claude/skills/change
 
 echo ""
 
+# --- init tests ---
+echo "=== init ==="
+
+HOOK_FILE="$PROJECT_DIR/.git/hooks/pre-commit"
+HOOK_BACKUP=""
+if [[ -f "$HOOK_FILE" ]]; then
+    HOOK_BACKUP="$TMPDIR/pre-commit.backup"
+    cp "$HOOK_FILE" "$HOOK_BACKUP"
+    rm "$HOOK_FILE"
+fi
+
+"$SKILL" init
+assert_file_exists "init creates pre-commit hook" "$HOOK_FILE"
+
+hook_content=$(cat "$HOOK_FILE")
+assert_contains "hook runs build-manifest" "build-manifest" "$hook_content"
+assert_contains "hook runs validate" "validate" "$hook_content"
+
+if [[ -n "$HOOK_BACKUP" ]]; then
+    cp "$HOOK_BACKUP" "$HOOK_FILE"
+else
+    rm -f "$HOOK_FILE"
+fi
+
+echo ""
+
 # Summary
 echo "=== Results: $PASS passed, $FAIL failed, $TESTS_RUN total ==="
 if [[ $FAIL -gt 0 ]]; then
