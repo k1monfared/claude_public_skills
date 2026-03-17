@@ -218,6 +218,31 @@ confirm() {
     esac
 }
 
+# --- Dependency notice ---
+# Prints a note if a skill has dependencies listed in frontmatter.
+print_dependency_notice() {
+    local skill_name="$1"
+    local skill_file="$SKILLS_DIR/$skill_name/SKILL.md"
+    [[ -f "$skill_file" ]] || return 0
+
+    local frontmatter
+    frontmatter="$(parse_frontmatter "$skill_file")"
+    local deps
+    deps=$(echo "$frontmatter" | sed -n 's/.*"dependencies": \[\([^]]*\)\].*/\1/p')
+
+    if [[ -n "$deps" ]]; then
+        local deps_clean
+        deps_clean=$(echo "$deps" | sed 's/"//g; s/,/, /g')
+        warn "Skill '$skill_name' uses external tools: $deps_clean"
+        # Extract install hint if present
+        local hint
+        hint=$(echo "$frontmatter" | sed -n 's/.*"dependency-install": "\([^"]*\)".*/\1/p')
+        if [[ -n "$hint" ]]; then
+            info "Install: $hint"
+        fi
+    fi
+}
+
 # --- Lazy validation ---
 lazy_validate() {
     if [[ ! -f "$MANIFEST_FILE" ]]; then
@@ -226,30 +251,30 @@ lazy_validate() {
         return
     fi
 
-    for skill_dir in "$SKILLS_DIR"/*/; do
-        [[ -d "$skill_dir" ]] || continue
-        local skill_name
-        skill_name="$(basename "$skill_dir")"
-        if ! grep -q "\"$skill_name\"" "$MANIFEST_FILE"; then
-            warn "Skill '$skill_name' not in manifest. Run: ./skill.sh build-manifest"
+    local _lv_dir _lv_name
+    for _lv_dir in "$SKILLS_DIR"/*/; do
+        [[ -d "$_lv_dir" ]] || continue
+        _lv_name="$(basename "$_lv_dir")"
+        if ! grep -q "\"$_lv_name\"" "$MANIFEST_FILE"; then
+            warn "Skill '$_lv_name' not in manifest. Run: ./skill.sh build-manifest"
         fi
     done
 
-    local manifest_skills
-    manifest_skills=$(sed -n 's/.*"\([a-zA-Z0-9_-]*\)": {.*/\1/p' "$MANIFEST_FILE" | grep -v '^skills$')
-    for skill_name in $manifest_skills; do
-        if [[ ! -d "$SKILLS_DIR/$skill_name" ]]; then
-            error "Skill '$skill_name' in manifest but directory missing. Run: ./skill.sh build-manifest"
+    local _lv_manifest_skills _lv_sname
+    _lv_manifest_skills=$(sed -n 's/.*"\([a-zA-Z0-9_-]*\)": {.*/\1/p' "$MANIFEST_FILE" | grep -v '^skills$')
+    for _lv_sname in $_lv_manifest_skills; do
+        if [[ ! -d "$SKILLS_DIR/$_lv_sname" ]]; then
+            error "Skill '$_lv_sname' in manifest but directory missing. Run: ./skill.sh build-manifest"
             exit 1
         fi
     done
 
     if [[ -f "$GROUPS_FILE" ]]; then
-        local group_skills
-        group_skills=$(sed -n 's/.*"skills":[[:space:]]*\[\([^]]*\)\].*/\1/p' "$GROUPS_FILE" | tr ',' '\n' | sed 's/[" ]//g' | sort -u | grep -v '^$')
-        for skill_name in $group_skills; do
-            if [[ ! -d "$SKILLS_DIR/$skill_name" ]]; then
-                error "Group references nonexistent skill: '$skill_name'"
+        local _lv_group_skills
+        _lv_group_skills=$(sed -n 's/.*"skills":[[:space:]]*\[\([^]]*\)\].*/\1/p' "$GROUPS_FILE" | tr ',' '\n' | sed 's/[" ]//g' | sort -u | grep -v '^$')
+        for _lv_sname in $_lv_group_skills; do
+            if [[ ! -d "$SKILLS_DIR/$_lv_sname" ]]; then
+                error "Group references nonexistent skill: '$_lv_sname'"
                 exit 1
             fi
         done
@@ -321,10 +346,11 @@ cmd_info() {
     echo ""
 
     local field value
-    for field in description version allowed-tools argument-hint tags; do
-        value=$(echo "$frontmatter" | sed -n "s/.*\"$field\": \(\"[^\"]*\"\|\[[^]]*\]\).*/\1/p")
+    for field in description version allowed-tools argument-hint tags dependencies dependency-install; do
+        # Use grep to extract the field — more reliable than sed on long lines
+        value=$(echo "$frontmatter" | grep -o "\"$field\": *\"[^\"]*\"\|\"$field\": *\[[^]]*\]" | head -1 | sed "s/\"$field\": *//" || true)
         if [[ -n "$value" ]]; then
-            printf "  %-16s %s\n" "$field:" "$value"
+            printf "  %-20s %s\n" "$field:" "$value"
         fi
     done
 
@@ -410,6 +436,7 @@ cmd_install() {
 EOF
 
         success "Installed $skill_name → $dest"
+        print_dependency_notice "$skill_name"
         count=$((count + 1))
     done <<< "$skills"
 
@@ -474,6 +501,7 @@ cmd_link() {
 
         ln -s "$src" "$dest"
         success "Linked $skill_name → $dest"
+        print_dependency_notice "$skill_name"
         count=$((count + 1))
     done <<< "$skills"
 

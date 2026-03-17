@@ -3,6 +3,8 @@ name: loglog
 description: Use when creating documentation, notes, status files, or any .log files. Loglog is a hierarchical plain-text documentation format that converts to markdown, HTML, LaTeX, and PDF.
 allowed-tools: Read, Write, Edit, Bash
 tags: [documentation, format]
+dependencies: [loglog]
+dependency-install: pip install loglog
 version: 1.0.0
 ---
 
