@@ -162,6 +162,62 @@ parse_args() {
     esac
 }
 
+# --- Target resolution ---
+resolve_target() {
+    local target="$1"
+    case "$target" in
+        --global|-g) echo "$HOME/.claude/skills" ;;
+        *)           echo "$target/.claude/skills" ;;
+    esac
+}
+
+# --- Skill resolution ---
+resolve_skills() {
+    local name="$1"
+
+    if [[ "$name" == "--all" ]]; then
+        for skill_dir in "$SKILLS_DIR"/*/; do
+            [[ -d "$skill_dir" ]] && basename "$skill_dir"
+        done
+        return
+    fi
+
+    if [[ -d "$SKILLS_DIR/$name" ]]; then
+        echo "$name"
+        return
+    fi
+
+    if [[ -f "$GROUPS_FILE" ]]; then
+        local in_group=false
+        while IFS= read -r line; do
+            if [[ "$line" =~ \"$name\":[[:space:]]*\{ ]]; then
+                in_group=true
+            fi
+            if $in_group && [[ "$line" =~ \"skills\":[[:space:]]*\[([^\]]+)\] ]]; then
+                local skills_str="${BASH_REMATCH[1]}"
+                echo "$skills_str" | sed 's/"//g; s/,/\n/g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$'
+                return
+            fi
+        done < "$GROUPS_FILE"
+    fi
+
+    error "Unknown skill or group: $name"
+    exit 1
+}
+
+# --- Confirm prompt ---
+confirm() {
+    local message="$1"
+    if $FORCE; then
+        return 0
+    fi
+    read -r -p "$message [y/N] " response
+    case "$response" in
+        [yY][eE][sS]|[yY]) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 # --- Lazy validation ---
 lazy_validate() {
     if [[ ! -f "$MANIFEST_FILE" ]]; then
@@ -289,7 +345,76 @@ cmd_info() {
         fi
     fi
 }
-cmd_install() { error "Not yet implemented"; exit 1; }
+cmd_install() {
+    if [[ $# -lt 2 ]]; then
+        error "Usage: skill.sh install <skill|group> <target>"
+        exit 1
+    fi
+
+    local skill_or_group="" target=""
+    local positional=()
+    for arg in "$@"; do
+        case "$arg" in
+            --force|-f) FORCE=true ;;
+            *) positional+=("$arg") ;;
+        esac
+    done
+
+    skill_or_group="${positional[0]}"
+    target="${positional[1]}"
+
+    lazy_validate
+
+    local target_dir
+    target_dir="$(resolve_target "$target")"
+    mkdir -p "$target_dir"
+
+    local skills
+    skills="$(resolve_skills "$skill_or_group")"
+
+    local count=0
+    while IFS= read -r skill_name; do
+        [[ -z "$skill_name" ]] && continue
+        local src="$SKILLS_DIR/$skill_name"
+        local dest="$target_dir/$skill_name"
+
+        if [[ -L "$dest" ]]; then
+            warn "'$skill_name' exists as a symlink at target"
+            if ! confirm "Replace symlink with copy?"; then
+                info "Skipping $skill_name"
+                continue
+            fi
+            rm "$dest"
+        elif [[ -d "$dest" ]]; then
+            warn "'$skill_name' already exists at target"
+            if ! confirm "Overwrite?"; then
+                info "Skipping $skill_name"
+                continue
+            fi
+            rm -rf "$dest"
+        fi
+
+        cp -r "$src" "$dest"
+
+        local version
+        version=$(parse_frontmatter "$src/SKILL.md" | sed -n 's/.*"version": "\([^"]*\)".*/\1/p')
+
+        cat > "$dest/.skill-source" <<EOF
+{
+  "source": "claude_public_skills",
+  "skill": "$skill_name",
+  "version": "$version",
+  "installed": "$(date +%Y-%m-%d)",
+  "method": "copy"
+}
+EOF
+
+        success "Installed $skill_name → $dest"
+        count=$((count + 1))
+    done <<< "$skills"
+
+    info "$count skill(s) installed to $target_dir"
+}
 cmd_link() { error "Not yet implemented"; exit 1; }
 cmd_uninstall() { error "Not yet implemented"; exit 1; }
 cmd_new() {

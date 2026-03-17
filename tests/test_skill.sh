@@ -156,6 +156,36 @@ rm -rf "$PROJECT_DIR/skills/test-skill"
 
 echo ""
 
+# --- install tests ---
+echo "=== install ==="
+
+TARGET_DIR="$TMPDIR/project1"
+mkdir -p "$TARGET_DIR"
+
+"$SKILL" install changelog "$TARGET_DIR" --force
+assert_file_exists "install copies SKILL.md" "$TARGET_DIR/.claude/skills/changelog/SKILL.md"
+assert_file_exists "install creates .skill-source" "$TARGET_DIR/.claude/skills/changelog/.skill-source"
+
+source_content=$(cat "$TARGET_DIR/.claude/skills/changelog/.skill-source")
+assert_contains "source has skill name" '"skill": "changelog"' "$source_content"
+assert_contains "source has method copy" '"method": "copy"' "$source_content"
+
+TARGET_DIR2="$TMPDIR/project2"
+mkdir -p "$TARGET_DIR2"
+"$SKILL" install dev-tools "$TARGET_DIR2" --force
+assert_file_exists "group install: changelog" "$TARGET_DIR2/.claude/skills/changelog/SKILL.md"
+assert_file_exists "group install: review" "$TARGET_DIR2/.claude/skills/review/SKILL.md"
+
+TARGET_DIR_ALL="$TMPDIR/project-all"
+mkdir -p "$TARGET_DIR_ALL"
+"$SKILL" install --all "$TARGET_DIR_ALL" --force
+assert_file_exists "install --all: changelog" "$TARGET_DIR_ALL/.claude/skills/changelog/SKILL.md"
+assert_file_exists "install --all: explain" "$TARGET_DIR_ALL/.claude/skills/explain/SKILL.md"
+assert_file_exists "install --all: loglog" "$TARGET_DIR_ALL/.claude/skills/loglog/SKILL.md"
+assert_file_exists "install --all: review" "$TARGET_DIR_ALL/.claude/skills/review/SKILL.md"
+
+echo ""
+
 # Summary
 echo "=== Results: $PASS passed, $FAIL failed, $TESTS_RUN total ==="
 if [[ $FAIL -gt 0 ]]; then
