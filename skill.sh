@@ -415,7 +415,70 @@ EOF
 
     info "$count skill(s) installed to $target_dir"
 }
-cmd_link() { error "Not yet implemented"; exit 1; }
+cmd_link() {
+    if [[ $# -lt 2 ]]; then
+        error "Usage: skill.sh link <skill|group> <target>"
+        exit 1
+    fi
+
+    local skill_or_group="" target=""
+    local positional=()
+    for arg in "$@"; do
+        case "$arg" in
+            --force|-f) FORCE=true ;;
+            *) positional+=("$arg") ;;
+        esac
+    done
+
+    skill_or_group="${positional[0]}"
+    target="${positional[1]}"
+
+    lazy_validate
+
+    local target_dir
+    target_dir="$(resolve_target "$target")"
+    mkdir -p "$target_dir"
+
+    local skills
+    skills="$(resolve_skills "$skill_or_group")"
+
+    local count=0
+    while IFS= read -r skill_name; do
+        [[ -z "$skill_name" ]] && continue
+        local src="$SKILLS_DIR/$skill_name"
+        local dest="$target_dir/$skill_name"
+
+        if [[ -L "$dest" ]]; then
+            local existing_target
+            existing_target="$(readlink "$dest")"
+            if [[ "$existing_target" == "$src" ]]; then
+                info "'$skill_name' already linked"
+                continue
+            else
+                warn "'$skill_name' symlinked to different source: $existing_target"
+                if ! confirm "Update symlink?"; then
+                    info "Skipping $skill_name"
+                    continue
+                fi
+                rm "$dest"
+            fi
+        elif [[ -d "$dest" ]]; then
+            warn "'$skill_name' exists as a directory (not symlink) at target"
+            if ! $FORCE; then
+                warn "Use --force to replace directory with symlink"
+                info "Skipping $skill_name"
+                continue
+            fi
+            rm -rf "$dest"
+        fi
+
+        ln -s "$src" "$dest"
+        success "Linked $skill_name → $dest"
+        count=$((count + 1))
+    done <<< "$skills"
+
+    info "$count skill(s) linked to $target_dir"
+}
 cmd_uninstall() { error "Not yet implemented"; exit 1; }
 cmd_new() {
     local skill_name="${1:-}"

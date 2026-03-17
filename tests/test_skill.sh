@@ -186,6 +186,29 @@ assert_file_exists "install --all: review" "$TARGET_DIR_ALL/.claude/skills/revie
 
 echo ""
 
+# --- link tests ---
+echo "=== link ==="
+
+TARGET_DIR3="$TMPDIR/project3"
+mkdir -p "$TARGET_DIR3"
+
+"$SKILL" link changelog "$TARGET_DIR3" --force
+assert_symlink "link creates symlink" "$TARGET_DIR3/.claude/skills/changelog"
+
+link_target=$(readlink "$TARGET_DIR3/.claude/skills/changelog")
+assert_eq "symlink target is correct" "$PROJECT_DIR/skills/changelog" "$link_target"
+
+output=$("$SKILL" link changelog "$TARGET_DIR3" --force 2>&1)
+assert_contains "re-link is no-op" "already linked" "$output"
+
+TARGET_DIR4="$TMPDIR/project4"
+mkdir -p "$TARGET_DIR4"
+"$SKILL" link dev-tools "$TARGET_DIR4" --force
+assert_symlink "group link: changelog" "$TARGET_DIR4/.claude/skills/changelog"
+assert_symlink "group link: review" "$TARGET_DIR4/.claude/skills/review"
+
+echo ""
+
 # Summary
 echo "=== Results: $PASS passed, $FAIL failed, $TESTS_RUN total ==="
 if [[ $FAIL -gt 0 ]]; then
