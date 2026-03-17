@@ -95,6 +95,29 @@ assert_contains "parses allowed-tools" '"allowed-tools": "Read, Write, Edit, Bas
 
 echo ""
 
+# --- build-manifest tests ---
+echo "=== build-manifest ==="
+
+"$SKILL" build-manifest
+assert_file_exists "manifest.json created" "$PROJECT_DIR/manifest.json"
+
+manifest=$(cat "$PROJECT_DIR/manifest.json")
+assert_contains "manifest has changelog" '"changelog"' "$manifest"
+assert_contains "manifest has explain" '"explain"' "$manifest"
+assert_contains "manifest has loglog" '"loglog"' "$manifest"
+assert_contains "manifest has review" '"review"' "$manifest"
+assert_contains "manifest has generated timestamp" '"generated"' "$manifest"
+
+echo ""
+
+# --- validate tests ---
+echo "=== validate ==="
+
+# After build-manifest, validate should pass
+assert_exit_code "validate passes after build-manifest" 0 "$SKILL" validate
+
+echo ""
+
 # Summary
 echo "=== Results: $PASS passed, $FAIL failed, $TESTS_RUN total ==="
 if [[ $FAIL -gt 0 ]]; then

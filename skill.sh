@@ -169,8 +169,91 @@ cmd_install() { error "Not yet implemented"; exit 1; }
 cmd_link() { error "Not yet implemented"; exit 1; }
 cmd_uninstall() { error "Not yet implemented"; exit 1; }
 cmd_new() { error "Not yet implemented"; exit 1; }
-cmd_build_manifest() { error "Not yet implemented"; exit 1; }
-cmd_validate() { error "Not yet implemented"; exit 1; }
+cmd_build_manifest() {
+    local result='{'
+    local first_skill=true
+    local skill_count=0
+
+    result+='"skills": {'
+
+    for skill_dir in "$SKILLS_DIR"/*/; do
+        [[ -d "$skill_dir" ]] || continue
+        local skill_file="$skill_dir/SKILL.md"
+        if [[ ! -f "$skill_file" ]]; then
+            warn "No SKILL.md in $(basename "$skill_dir"), skipping"
+            continue
+        fi
+
+        local skill_name
+        skill_name="$(basename "$skill_dir")"
+        local frontmatter
+        frontmatter="$(parse_frontmatter "$skill_file")"
+
+        if ! $first_skill; then
+            result+=', '
+        fi
+        first_skill=false
+
+        result+="\"$skill_name\": $frontmatter"
+        skill_count=$((skill_count + 1))
+    done
+
+    result+='}, '
+    result+="\"generated\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+
+    echo "$result" > "$MANIFEST_FILE"
+    success "Manifest written to manifest.json ($skill_count skill(s))"
+}
+cmd_validate() {
+    local errors=0
+
+    # Check manifest exists
+    if [[ ! -f "$MANIFEST_FILE" ]]; then
+        error "manifest.json not found. Run: ./skill.sh build-manifest"
+        return 1
+    fi
+
+    # Check each skill dir on disk is in manifest
+    for skill_dir in "$SKILLS_DIR"/*/; do
+        [[ -d "$skill_dir" ]] || continue
+        local skill_name
+        skill_name="$(basename "$skill_dir")"
+        if ! grep -q "\"$skill_name\"" "$MANIFEST_FILE"; then
+            error "Skill '$skill_name' exists on disk but not in manifest"
+            errors=$((errors + 1))
+        fi
+    done
+
+    # Check each manifest entry has a directory
+    local manifest_skills
+    manifest_skills=$(sed -n 's/.*"\([a-zA-Z0-9_-]*\)": {.*/\1/p' "$MANIFEST_FILE" | grep -v '^skills$')
+    for skill_name in $manifest_skills; do
+        if [[ ! -d "$SKILLS_DIR/$skill_name" ]]; then
+            error "Skill '$skill_name' in manifest but directory missing"
+            errors=$((errors + 1))
+        fi
+    done
+
+    # Check groups reference valid skills
+    if [[ -f "$GROUPS_FILE" ]]; then
+        local group_skills
+        group_skills=$(sed -n 's/.*"skills":[[:space:]]*\[\([^]]*\)\].*/\1/p' "$GROUPS_FILE" | tr ',' '\n' | sed 's/[" ]//g' | sort -u | grep -v '^$')
+        for skill_name in $group_skills; do
+            if [[ ! -d "$SKILLS_DIR/$skill_name" ]]; then
+                error "Group references nonexistent skill: '$skill_name'"
+                errors=$((errors + 1))
+            fi
+        done
+    fi
+
+    if [[ $errors -gt 0 ]]; then
+        error "Validation failed with $errors error(s)"
+        return 1
+    fi
+
+    success "Validation passed"
+    return 0
+}
 cmd_init() { error "Not yet implemented"; exit 1; }
 
 # --- Main ---
