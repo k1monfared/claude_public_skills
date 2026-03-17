@@ -139,6 +139,23 @@ assert_contains "info shows group membership" "dev-tools" "$info_output"
 
 echo ""
 
+# --- new tests ---
+echo "=== new ==="
+
+"$SKILL" new test-skill
+assert_file_exists "new creates directory" "$PROJECT_DIR/skills/test-skill/SKILL.md"
+
+content=$(cat "$PROJECT_DIR/skills/test-skill/SKILL.md")
+assert_contains "new replaces SKILL_NAME in frontmatter" 'name: test-skill' "$content"
+assert_contains "new replaces SKILL_NAME in heading" '# test-skill' "$content"
+
+assert_exit_code "new errors on existing skill" 1 "$SKILL" new test-skill
+
+rm -rf "$PROJECT_DIR/skills/test-skill"
+"$SKILL" build-manifest > /dev/null 2>&1
+
+echo ""
+
 # Summary
 echo "=== Results: $PASS passed, $FAIL failed, $TESTS_RUN total ==="
 if [[ $FAIL -gt 0 ]]; then

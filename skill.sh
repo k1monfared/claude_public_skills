@@ -292,7 +292,33 @@ cmd_info() {
 cmd_install() { error "Not yet implemented"; exit 1; }
 cmd_link() { error "Not yet implemented"; exit 1; }
 cmd_uninstall() { error "Not yet implemented"; exit 1; }
-cmd_new() { error "Not yet implemented"; exit 1; }
+cmd_new() {
+    local skill_name="${1:-}"
+    if [[ -z "$skill_name" ]]; then
+        error "Usage: skill.sh new <skill-name>"
+        exit 1
+    fi
+
+    local skill_dir="$SKILLS_DIR/$skill_name"
+    if [[ -d "$skill_dir" ]]; then
+        error "Skill already exists: $skill_name"
+        exit 1
+    fi
+
+    local template="$TEMPLATES_DIR/SKILL.md"
+    if [[ ! -f "$template" ]]; then
+        error "Template not found: $template"
+        exit 1
+    fi
+
+    mkdir -p "$skill_dir"
+    sed "s/SKILL_NAME/$skill_name/g" "$template" > "$skill_dir/SKILL.md"
+
+    success "Created skill: $skill_name"
+    info "Edit skills/$skill_name/SKILL.md to customize"
+
+    cmd_build_manifest
+}
 cmd_build_manifest() {
     local result='{'
     local first_skill=true
