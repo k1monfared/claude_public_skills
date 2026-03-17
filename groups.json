@@ -7,6 +7,10 @@
     "description": "Documentation and explanation skills",
     "skills": ["explain", "loglog", "changelog"]
   },
+  "research": {
+    "description": "Research and academic workflow skills",
+    "skills": ["paper-summarizer"]
+  },
   "skill-meta": {
     "description": "Skills for creating, improving, and managing other skills",
     "skills": ["create-skill", "improve-skill", "extract-skills", "skill-audit", "cross-skill-patterns", "synthesize-learnings", "skill-management"]
