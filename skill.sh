@@ -162,9 +162,133 @@ parse_args() {
     esac
 }
 
+# --- Lazy validation ---
+lazy_validate() {
+    if [[ ! -f "$MANIFEST_FILE" ]]; then
+        warn "manifest.json not found. Generating..."
+        cmd_build_manifest
+        return
+    fi
+
+    for skill_dir in "$SKILLS_DIR"/*/; do
+        [[ -d "$skill_dir" ]] || continue
+        local skill_name
+        skill_name="$(basename "$skill_dir")"
+        if ! grep -q "\"$skill_name\"" "$MANIFEST_FILE"; then
+            warn "Skill '$skill_name' not in manifest. Run: ./skill.sh build-manifest"
+        fi
+    done
+
+    local manifest_skills
+    manifest_skills=$(sed -n 's/.*"\([a-zA-Z0-9_-]*\)": {.*/\1/p' "$MANIFEST_FILE" | grep -v '^skills$')
+    for skill_name in $manifest_skills; do
+        if [[ ! -d "$SKILLS_DIR/$skill_name" ]]; then
+            error "Skill '$skill_name' in manifest but directory missing. Run: ./skill.sh build-manifest"
+            exit 1
+        fi
+    done
+
+    if [[ -f "$GROUPS_FILE" ]]; then
+        local group_skills
+        group_skills=$(sed -n 's/.*"skills":[[:space:]]*\[\([^]]*\)\].*/\1/p' "$GROUPS_FILE" | tr ',' '\n' | sed 's/[" ]//g' | sort -u | grep -v '^$')
+        for skill_name in $group_skills; do
+            if [[ ! -d "$SKILLS_DIR/$skill_name" ]]; then
+                error "Group references nonexistent skill: '$skill_name'"
+                exit 1
+            fi
+        done
+    fi
+}
+
 # --- Stub commands (to be implemented in later tasks) ---
-cmd_list() { error "Not yet implemented"; exit 1; }
-cmd_info() { error "Not yet implemented"; exit 1; }
+cmd_list() {
+    lazy_validate
+
+    echo "Skills:"
+    echo ""
+    for skill_dir in "$SKILLS_DIR"/*/; do
+        [[ -d "$skill_dir" ]] || continue
+        local skill_name
+        skill_name="$(basename "$skill_dir")"
+        local frontmatter
+        frontmatter="$(parse_frontmatter "$skill_dir/SKILL.md")"
+
+        local version description
+        version=$(echo "$frontmatter" | sed -n 's/.*"version": "\([^"]*\)".*/\1/p')
+        description=$(echo "$frontmatter" | sed -n 's/.*"description": "\([^"]*\)".*/\1/p')
+
+        printf "  %-20s %-8s %s\n" "$skill_name" "v$version" "$description"
+    done
+
+    if [[ -f "$GROUPS_FILE" ]]; then
+        echo ""
+        echo "Groups:"
+        echo ""
+        local current_group=""
+        while IFS= read -r line; do
+            if [[ "$line" =~ \"([a-zA-Z0-9_-]+)\":[[:space:]]*\{ ]]; then
+                current_group="${BASH_REMATCH[1]}"
+            fi
+            if [[ -n "$current_group" && "$line" =~ \"description\":[[:space:]]*\"([^\"]+)\" ]]; then
+                local desc="${BASH_REMATCH[1]}"
+                printf "  %-20s %s\n" "$current_group" "$desc"
+            fi
+            if [[ -n "$current_group" && "$line" =~ \"skills\":[[:space:]]*\[([^\]]+)\] ]]; then
+                local skills_str="${BASH_REMATCH[1]}"
+                local skills_clean
+                skills_clean=$(echo "$skills_str" | sed 's/"//g; s/,/ /g; s/^[[:space:]]*//; s/[[:space:]]*$//')
+                echo "    skills: $skills_clean"
+                current_group=""
+            fi
+        done < "$GROUPS_FILE"
+    fi
+}
+cmd_info() {
+    local skill_name="${1:-}"
+    if [[ -z "$skill_name" ]]; then
+        error "Usage: skill.sh info <skill>"
+        exit 1
+    fi
+
+    local skill_dir="$SKILLS_DIR/$skill_name"
+    if [[ ! -d "$skill_dir" ]]; then
+        error "Skill not found: $skill_name"
+        exit 1
+    fi
+
+    lazy_validate
+
+    local frontmatter
+    frontmatter="$(parse_frontmatter "$skill_dir/SKILL.md")"
+
+    echo "Skill: $skill_name"
+    echo ""
+
+    local field value
+    for field in description version allowed-tools argument-hint tags; do
+        value=$(echo "$frontmatter" | sed -n "s/.*\"$field\": \(\"[^\"]*\"\|\[[^]]*\]\).*/\1/p")
+        if [[ -n "$value" ]]; then
+            printf "  %-16s %s\n" "$field:" "$value"
+        fi
+    done
+
+    if [[ -f "$GROUPS_FILE" ]]; then
+        local groups=""
+        local current_group=""
+        while IFS= read -r line; do
+            if [[ "$line" =~ \"([a-zA-Z0-9_-]+)\":[[:space:]]*\{ ]]; then
+                current_group="${BASH_REMATCH[1]}"
+            fi
+            if [[ -n "$current_group" && "$line" =~ \"skills\" && "$line" == *"\"$skill_name\""* ]]; then
+                groups+="$current_group "
+            fi
+        done < "$GROUPS_FILE"
+
+        if [[ -n "$groups" ]]; then
+            printf "  %-16s %s\n" "groups:" "$groups"
+        fi
+    fi
+}
 cmd_install() { error "Not yet implemented"; exit 1; }
 cmd_link() { error "Not yet implemented"; exit 1; }
 cmd_uninstall() { error "Not yet implemented"; exit 1; }

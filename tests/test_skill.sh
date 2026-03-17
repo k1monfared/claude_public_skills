@@ -118,6 +118,27 @@ assert_exit_code "validate passes after build-manifest" 0 "$SKILL" validate
 
 echo ""
 
+# --- list tests ---
+echo "=== list ==="
+
+list_output=$("$SKILL" list)
+assert_contains "list shows changelog" "changelog" "$list_output"
+assert_contains "list shows review" "review" "$list_output"
+assert_contains "list shows groups" "dev-tools" "$list_output"
+
+echo ""
+
+# --- info tests ---
+echo "=== info ==="
+
+info_output=$("$SKILL" info changelog)
+assert_contains "info shows name" "changelog" "$info_output"
+assert_contains "info shows version" "1.0.0" "$info_output"
+assert_contains "info shows tags" "git" "$info_output"
+assert_contains "info shows group membership" "dev-tools" "$info_output"
+
+echo ""
+
 # Summary
 echo "=== Results: $PASS passed, $FAIL failed, $TESTS_RUN total ==="
 if [[ $FAIL -gt 0 ]]; then
