@@ -479,7 +479,67 @@ cmd_link() {
 
     info "$count skill(s) linked to $target_dir"
 }
-cmd_uninstall() { error "Not yet implemented"; exit 1; }
+cmd_uninstall() {
+    if [[ $# -lt 2 ]]; then
+        error "Usage: skill.sh uninstall <skill|group> <target>"
+        exit 1
+    fi
+
+    local skill_or_group="" target=""
+    local positional=()
+    for arg in "$@"; do
+        case "$arg" in
+            --force|-f) FORCE=true ;;
+            *) positional+=("$arg") ;;
+        esac
+    done
+
+    skill_or_group="${positional[0]}"
+    target="${positional[1]}"
+
+    local target_dir
+    target_dir="$(resolve_target "$target")"
+
+    local skills
+    skills="$(resolve_skills "$skill_or_group")"
+
+    local count=0
+    while IFS= read -r skill_name; do
+        [[ -z "$skill_name" ]] && continue
+        local dest="$target_dir/$skill_name"
+
+        if [[ ! -e "$dest" && ! -L "$dest" ]]; then
+            warn "'$skill_name' not found at target"
+            continue
+        fi
+
+        if [[ -L "$dest" ]]; then
+            rm "$dest"
+            success "Uninstalled $skill_name (symlink removed)"
+            count=$((count + 1))
+            continue
+        fi
+
+        if [[ -f "$dest/.skill-source" ]]; then
+            rm -rf "$dest"
+            success "Uninstalled $skill_name (directory removed)"
+            count=$((count + 1))
+            continue
+        fi
+
+        if $FORCE; then
+            rm -rf "$dest"
+            success "Uninstalled $skill_name (forced)"
+            count=$((count + 1))
+        else
+            error "'$skill_name' was not installed by skill.sh (no .skill-source marker)"
+            error "Use --force to remove anyway"
+            return 1
+        fi
+    done <<< "$skills"
+
+    info "$count skill(s) uninstalled from $target_dir"
+}
 cmd_new() {
     local skill_name="${1:-}"
     if [[ -z "$skill_name" ]]; then

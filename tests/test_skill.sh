@@ -209,6 +209,23 @@ assert_symlink "group link: review" "$TARGET_DIR4/.claude/skills/review"
 
 echo ""
 
+# --- uninstall tests ---
+echo "=== uninstall ==="
+
+"$SKILL" uninstall changelog "$TARGET_DIR" --force
+assert_exit_code "uninstall removes installed skill" 0 test ! -d "$TARGET_DIR/.claude/skills/changelog"
+
+"$SKILL" uninstall changelog "$TARGET_DIR3" --force
+assert_exit_code "uninstall removes linked skill" 0 test ! -L "$TARGET_DIR3/.claude/skills/changelog"
+
+FOREIGN_DIR="$TMPDIR/foreign"
+mkdir -p "$FOREIGN_DIR/.claude/skills/changelog"
+echo "manually placed" > "$FOREIGN_DIR/.claude/skills/changelog/SKILL.md"
+assert_exit_code "uninstall refuses foreign skill" 1 "$SKILL" uninstall changelog "$FOREIGN_DIR"
+assert_file_exists "foreign skill preserved" "$FOREIGN_DIR/.claude/skills/changelog/SKILL.md"
+
+echo ""
+
 # Summary
 echo "=== Results: $PASS passed, $FAIL failed, $TESTS_RUN total ==="
 if [[ $FAIL -gt 0 ]]; then
