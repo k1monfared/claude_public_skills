@@ -7,6 +7,10 @@
     "description": "Documentation and explanation skills",
     "skills": ["explain", "loglog", "changelog"]
   },
+  "content": {
+    "description": "Content management, tagging, and organization skills",
+    "skills": ["tag-content", "update-tag-hierarchy"]
+  },
   "research": {
     "description": "Research and academic workflow skills",
     "skills": ["paper-summarizer"]
