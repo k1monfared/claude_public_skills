@@ -1,0 +1,29 @@
+- Claude Public Skills
+    - A collection of reusable Claude Code skills with a management CLI.
+    - Skills are developed here and can be installed or linked into any project.
+
+- Quick Start
+    - Clone: git clone <repo-url>
+    - List skills: ./skill.sh list
+    - Install a skill: ./skill.sh install changelog --global
+    - Link for development: ./skill.sh link --all --global
+    - Create new skill: ./skill.sh new my-skill
+
+- Commands
+    - list: Show all available skills and groups
+    - info <skill>: Show skill details
+    - install <skill|group> <target>: Copy skill(s) to target
+    - link <skill|group> <target>: Symlink skill(s) to target
+    - uninstall <skill|group> <target>: Remove skill(s) from target
+    - new <name>: Scaffold a new skill from template
+    - build-manifest: Regenerate manifest.json
+    - validate: Check everything is in sync
+    - init: Install git pre-commit hook
+
+- Targets
+    - --global or -g: Install to ~/.claude/skills/
+    - <path>: Install to <path>/.claude/skills/
+
+- Flags
+    - --force or -f: Skip confirmation prompts
+    - --all: Apply to all skills
