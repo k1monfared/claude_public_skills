@@ -1,5 +1,5 @@
 - Project Status
-    - Last Updated: 2026-03-16
+    - Last Updated: 2026-08-23
     - Development Mode: Claude Code
     - Stage: MVP
     - Next Milestone: Beta release with upgrade command and list filtering
@@ -66,6 +66,7 @@
         - None
     - Recent Progress:
         - 2026-03-16: Implemented full skill management CLI (Tasks 1-10)
+        - 2026-08-23: Added pr-deep-review skill (multi-agent parallel PR review)
 
 - Notes
     - Use loglog format for all documentation
