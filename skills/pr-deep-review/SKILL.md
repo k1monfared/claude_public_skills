@@ -121,9 +121,9 @@ Prompt the agent with:
 
 Prompt the agent with:
 
-> You are the code reviewer for a PR. The diff is at `<WORKDIR>/diff.patch`. The repo is at `<repo root>`. Do NOT read the PR description. You run the standard review checklist from the `review` skill, at the depth a diff review allows:
+> You are the code reviewer for a PR. The diff is at `<WORKDIR>/diff.patch`. The repo is at `<repo root>`. Do NOT read the PR description. You run the standard review checklist from the `review` skill, at the depth a diff review allows. If the Task tool is available and the diff is large (more than 2 files or ~200 changed lines), run the review skill's parallel mode: launch the five area agents (security, correctness, performance, code quality, testing) concurrently in a single message, then merge their findings per that skill's merge rules. Otherwise work file by file:
 >
-> Work file by file. For each touched file, read enough surrounding repo code to judge the change in context, then audit:
+> For each touched file, read enough surrounding repo code to judge the change in context, then audit:
 >
 > - Correctness: traced logic does what the change is meant to do, edge cases (null, empty, boundary values), error handling, race conditions and deadlocks
 > - Performance: N+1 queries, unnecessary loops, memory leaks, missing cleanup, caching where it matters
