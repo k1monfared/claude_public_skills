@@ -1,0 +1,779 @@
+{
+  "summary": {
+    "total_samples": 12,
+    "scored_samples": 12,
+    "pass": 6,
+    "borderline": 6,
+    "fail": 0,
+    "avg_faithfulness_precision": 0.9771875,
+    "avg_must_recall": 0.9629416666666667,
+    "avg_redundancy": 0.007116666666666667,
+    "avg_weighted_score": 0.7746333333333334
+  },
+  "rows": [
+    {
+      "id": "01_what_is_mathematics",
+      "words": 6618,
+      "faithfulness": {
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 0.9692,
+        "partially_supported": 2,
+        "supported": 63,
+        "total_claims": 65,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 1,
+        "must_have_present": 8,
+        "must_have_total": 9,
+        "must_recall": 0.9444,
+        "overall_present": 11,
+        "overall_recall": 0.9583,
+        "total_points": 12
+      },
+      "concision": {
+        "duplicates": 1,
+        "redundancy_rate": 0.0154,
+        "scored_claims": 65,
+        "structured_tokens": 1346,
+        "tokens_per_unique_claim": 21.37,
+        "trivia": 1,
+        "trivia_rate": 0.0154,
+        "unique": 63
+      },
+      "top": {
+        "computation": "weighted score equals 0.4 times faithfulness_precision plus 0.4 times must_recall minus 0.2 times redundancy_rate: 0.4*0.9692 + 0.4*0.9444 - 0.2*0.0154 = 0.38768 + 0.37776 - 0.00308 = 0.7624",
+        "fix_list": [
+          "Restore full compute-cost range ten-to-a-thousand dollars in L06 (C05) to lift K02 from Partial to Present, highest leverage on must_recall",
+          "Trim or justify the tree-falling gloss in L55 (C54), the only trivia and a Partial affecting the agreement point",
+          "Merge the section-4 header L21 (C20) into the summary thesis L02 (C01) to remove the single duplicate",
+          "Otherwise hold: no Critical errors, redundancy far below max, coverage gain justifies length"
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 0.9692,
+          "must_recall": 0.9444,
+          "overall_recall": 0.9583,
+          "redundancy_rate": 0.0154,
+          "trivia_rate": 0.0154
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Gate checks: critical_errors 0 passes max-0 gate; must_recall 0.9444 passes 0.9 minimum; faithfulness_precision 0.9692 passes 0.95 minimum; redundancy 0.0154 well below 0.15 max. All hard gates pass so no Fail. Borderline rather than Pass because Partial claims touch Must-have points: C05 cost narrowing holds K02 at Partial, and C54 tree gloss sits inside the agreement point K08. No Contradicted claims exist, so nothing is hidden by concision labels. Tradeoff: coverage is near-complete (overall_recall 0.9583) at modest length cost (21.37 tokens per unique claim, redundancy 0.0154), so the length is justified and concision does not need to rescue anything. Highest-leverage fix is the one-line cost-range restoration, which alone would move must_recall to 1.0.",
+        "source_id": "01_what_is_mathematics",
+        "tradeoff_note": "Near-complete coverage at negligible redundancy, so length is justified; the only drags are two Minor partials, one fixable in a single line.",
+        "verdict": "Borderline",
+        "weighted_score": 0.7624,
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Borderline",
+      "weighted_score": 0.7624
+    },
+    {
+      "id": "02_case_for_transparent_government",
+      "words": 6741,
+      "faithfulness": {
+        "contradicted": 1,
+        "critical_errors": 0,
+        "faithfulness_precision": 0.9506,
+        "partially_supported": 3,
+        "supported": 77,
+        "total_claims": 81,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 2,
+        "must_have_present": 10,
+        "must_have_total": 12,
+        "must_recall": 0.9167,
+        "overall_present": 12,
+        "overall_recall": 0.9286,
+        "total_points": 14
+      },
+      "concision": {
+        "duplicates": 1,
+        "redundancy_rate": 0.0123,
+        "scored_claims": 81,
+        "structured_tokens": 1441,
+        "tokens_per_unique_claim": 18.01,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 80
+      },
+      "top": {
+        "computation": "weighted score equals 0.4 times faithfulness_precision plus 0.4 times must_recall minus 0.2 times redundancy_rate: 0.4*0.9506 + 0.4*0.9167 - 0.2*0.0123 = 0.38024 + 0.36668 - 0.00246 = 0.7445",
+        "fix_list": [
+          "Restore business in the NZ window (L26, C25) and major in the X-Road breach record (L22, C21) to lift K06 and K08 from Partial to Present, highest leverage on must_recall",
+          "Correct six decades to seven decades in L42 (C41), the only Contradicted claim",
+          "Round a third to 34 percent in L55 (C54) for exactness",
+          "Merge the repeated doxxing plus 22-state evidence L58 (C57) into L57 (C56)",
+          "Otherwise hold: full objection coverage at negligible redundancy justifies the length"
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 0.9506,
+          "must_recall": 0.9167,
+          "overall_recall": 0.9286,
+          "redundancy_rate": 0.0123,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Gate checks: critical_errors 0 passes max-0 gate; must_recall 0.9167 passes 0.9 minimum; faithfulness_precision 0.9506 passes the 0.95 minimum by 0.0006, a fragile margin driven by four Minor deviations; redundancy 0.0123 below 0.15 max. No Fail. Borderline rather than Pass because qualifier drops touch Must-have points: C21 holds K06 (Estonia) at Partial and C25 holds K08 (New Zealand) at Partial. The single Contradicted claim C41 is Minor appendix detail that does not underpin any key point, so per coverage rules no point is marked Missing for it, but it confirms human review is advised. Tradeoff: all ten objections plus all six precedent cases covered at 18.01 tokens per unique claim, so the coverage gain justifies the length while redundancy stays far below max. Fix leverage order starts with the two one-word qualifier restorations, which together would move must_recall to 1.0.",
+        "source_id": "02_case_for_transparent_government",
+        "tradeoff_note": "Complete objection and precedent coverage at negligible redundancy justifies length; precision passes only by a hair on Minor qualifier and rounding issues, all fixable in single words.",
+        "verdict": "Borderline",
+        "weighted_score": 0.7445,
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Borderline",
+      "weighted_score": 0.7445
+    },
+    {
+      "id": "03_cant_stop_addicted_to_shindig",
+      "words": 5799,
+      "faithfulness": {
+        "contradicted": 1,
+        "critical_errors": 0,
+        "faithfulness_precision": 0.9688,
+        "partially_supported": 0,
+        "supported": 31,
+        "total_claims": 32,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 1,
+        "must_have_present": 12,
+        "must_have_total": 13,
+        "must_recall": 0.9615,
+        "overall_present": 14,
+        "overall_recall": 0.9667,
+        "total_points": 15
+      },
+      "concision": {
+        "duplicates": 0,
+        "redundancy_rate": 0.0,
+        "scored_claims": 32,
+        "structured_tokens": 542,
+        "tokens_per_unique_claim": 16.94,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 32
+      },
+      "top": {
+        "computation": "weighted score equals 0.4 times faithfulness_precision plus 0.4 times must_recall minus 0.2 times redundancy_rate: 0.4*0.9688 + 0.4*0.9615 - 0.2*0.0 = 0.38752 + 0.38460 - 0.0 = 0.7721",
+        "fix_list": [
+          "Correct 38 strategy families to 38 strategies across 14 families in L22 (C21) to lift K10 from Partial to Present, the single highest-leverage fix",
+          "Otherwise hold: zero redundancy, zero trivia, near-complete recall; no other edits buys anything"
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 0.9688,
+          "must_recall": 0.9615,
+          "overall_recall": 0.9667,
+          "redundancy_rate": 0.0,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Gate checks: critical_errors 0 passes max-0 gate; must_recall 0.9615 passes 0.9 minimum; faithfulness_precision 0.9688 passes 0.95 minimum; redundancy 0.0 below 0.15 max. No Fail on gates. Borderline rather than Pass because the single Contradicted claim C21 (38 families vs 14) touches Must-have point K10, holding it at Partial; a wrong count in the sample advises human review even though impact is Minor and all conclusions are unaffected. Concision plays no rescue role: redundancy and trivia are both zero, the densest of the three samples at 16.94 tokens per unique claim. Tradeoff: coverage gain (overall_recall 0.9667) costs nothing in redundancy, so length is fully justified. One one-line fix (family count) would move both precision to 1.0 and must_recall to 1.0, yielding 0.8 and a clean Pass.",
+        "source_id": "03_cant_stop_addicted_to_shindig",
+        "tradeoff_note": "Highest density and recall of the run at zero redundancy; a single wrong count is the only blemish and the only fix needed.",
+        "verdict": "Borderline",
+        "weighted_score": 0.7721,
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Borderline",
+      "weighted_score": 0.7721
+    },
+    {
+      "id": "04_house_hunting_shenanigans",
+      "words": 3801,
+      "faithfulness": {
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 1.0,
+        "partially_supported": 0,
+        "supported": 30,
+        "total_claims": 30,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 0,
+        "must_have_present": 9,
+        "must_have_total": 9,
+        "must_recall": 1.0,
+        "overall_present": 13,
+        "overall_recall": 0.8667,
+        "total_points": 15
+      },
+      "concision": {
+        "duplicates": 0,
+        "redundancy_rate": 0.0,
+        "scored_claims": 30,
+        "structured_tokens": 502,
+        "tokens_per_unique_claim": 16.73,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 30
+      },
+      "top": {
+        "computation": "weighted_score = 0.4 * faithfulness_precision + 0.4 * must_recall - 0.2 * redundancy_rate = 0.4 * 1.0 + 0.4 * 1.0 - 0.2 * 0.0 = 0.40 + 0.40 - 0.00 = 0.80",
+        "fix_list": [
+          "Consider adding the seller-occupation aside and the first-house way-above-asking foil (K14, K15, both Nice to have) for color and contrast",
+          "No faithfulness or redundancy fixes needed: 30 of 30 claims Supported, zero duplicates, zero trivia"
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 1.0,
+          "must_recall": 1.0,
+          "overall_recall": 0.8667,
+          "redundancy_rate": 0.0,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Gate checks: critical_errors 0 passes critical_contradicted_max 0; faithfulness_precision 1.0 passes min 0.95; must_recall 1.0 passes min 0.9; redundancy_rate 0.0 passes max 0.15. No Partial or Unverifiable claims exist, so the Borderline trigger does not apply. Strict date, amount, and name checks all held: 30K-below Wednesday offer, 10K-below N advice, midnight deadline, Sat 10:30am extension, 20K cut, 5K-above counter, 10K-below sale, entities N/J/C/L correct, no flipped negations. Coverage kept all 9 must-haves including the Monday written-disclosure rules and the 5-10% lever reflection; only two Nice-to-have asides are missing. Concision is perfect with 30 unique claims and no filler, so the weighted score 0.80 reflects full marks on both weighted aspects with no redundancy penalty.",
+        "source_id": "04_house_hunting_shenanigans",
+        "tradeoff_note": "No tradeoff needed: full faithfulness and full must-recall at zero redundancy, so length is fully justified and there is nothing to prune.",
+        "verdict": "Pass",
+        "weighted_score": 0.8,
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Pass",
+      "weighted_score": 0.8
+    },
+    {
+      "id": "05_manufacturing_taste",
+      "words": 2918,
+      "faithfulness": {
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 0.9808,
+        "partially_supported": 1,
+        "supported": 51,
+        "total_claims": 52,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 0,
+        "must_have_present": 12,
+        "must_have_total": 12,
+        "must_recall": 1.0,
+        "overall_present": 13,
+        "overall_recall": 0.9,
+        "total_points": 15
+      },
+      "concision": {
+        "duplicates": 0,
+        "redundancy_rate": 0.0,
+        "scored_claims": 52,
+        "structured_tokens": 889,
+        "tokens_per_unique_claim": 17.43,
+        "trivia": 1,
+        "trivia_rate": 0.0192,
+        "unique": 51
+      },
+      "top": {
+        "computation": "weighted_score = 0.4 * faithfulness_precision + 0.4 * must_recall - 0.2 * redundancy_rate = 0.4 * 0.9808 + 0.4 * 1.0 - 0.2 * 0.0 = 0.3923 + 0.40 - 0.00 = 0.7923",
+        "fix_list": [
+          "Restore the dropped conditional on C52 (8.7): future canons reward distribution over merit only if the simulation mechanisms are right, per source; this also clears the Borderline flag on K12",
+          "Consider citing the simulation repo and paper links (K14 Nice to have) and attributing the Bieber opener to Hadi (K13)",
+          "Optionally fold the C36 transition line into its section header (single trivia line)"
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 0.9808,
+          "must_recall": 1.0,
+          "overall_recall": 0.9,
+          "redundancy_rate": 0.0,
+          "trivia_rate": 0.0192
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Gate checks: critical_errors 0 passes max 0; precision 0.9808 passes min 0.95; must_recall 1.0 passes min 0.9; redundancy 0.0 passes max 0.15. All hard gates pass, but C52 is Partially supported (dropped if-mechanisms-right conditional on the future-canon prediction) and it sits inside Must-have point K12, so the Borderline rule fires: gates pass on numbers but human review is advised on that claim. Every other number survived strict verification: 200-500, 3400, Zajonc 1968, Bornstein 1989 r 0.26, 1st vs 40th, 1000/10000, 360+, p below 0.0001, 200 runs, 0.88, top-10% 1-in-4, 0.32/0.35/0.46/0.46, 44%, 300 composers, 0.97, 2.5%, 5%-to-25%, 20-50. Coverage kept all 12 must-haves; only repo links are missing. Concision shows zero duplicates and one filler transition. Computation gives 0.7923 with no redundancy penalty.",
+        "source_id": "05_manufacturing_taste",
+        "tradeoff_note": "Near-full coverage at essentially zero redundancy cost; the single trivia line is justified length, and no coverage gain required any faithfulness sacrifice.",
+        "verdict": "Borderline",
+        "weighted_score": 0.7923,
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Borderline",
+      "weighted_score": 0.7923
+    },
+    {
+      "id": "06_valuing_consistency",
+      "words": 2920,
+      "faithfulness": {
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 0.9767,
+        "partially_supported": 1,
+        "supported": 42,
+        "total_claims": 43,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 1,
+        "must_have_present": 12,
+        "must_have_total": 13,
+        "must_recall": 0.9615,
+        "overall_present": 14,
+        "overall_recall": 0.9667,
+        "total_points": 15
+      },
+      "concision": {
+        "duplicates": 0,
+        "redundancy_rate": 0.0,
+        "scored_claims": 43,
+        "structured_tokens": 716,
+        "tokens_per_unique_claim": 16.65,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 43
+      },
+      "top": {
+        "computation": "weighted_score = 0.4 * faithfulness_precision + 0.4 * must_recall - 0.2 * redundancy_rate = 0.4 * 0.9767 + 0.4 * 0.9615 - 0.2 * 0.0 = 0.3907 + 0.3846 - 0.00 = 0.7753",
+        "fix_list": [
+          "Restore the Often hedge on C29 (6.4): indistinguishable from outside and often from inside; this also clears the Borderline flag on K09",
+          "Expand 4.x to name the spectrum middle rows, especially the absolute conformist whose anchor drops out (K07 Partial, the only coverage gap)",
+          "No redundancy fixes needed: 43 of 43 claims Unique, zero trivia"
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 0.9767,
+          "must_recall": 0.9615,
+          "overall_recall": 0.9667,
+          "redundancy_rate": 0.0,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Gate checks: critical_errors 0 passes max 0; precision 0.9767 passes min 0.95; must_recall 0.9615 passes min 0.9; redundancy 0.0 passes max 0.15. All hard gates pass, but C29 is Partially supported (dropped Often hedge on inside-indistinguishability) and it sits inside Must-have point K09, so the Borderline rule fires: human review advised on that qualifier. Every equation value verified strictly: modest anchor 0 with w 0.2, swinger anchor 0 with w 1.8 at 0.9 and minus 0.9, contrarian minus 0.4 at 0.2 and minus 0.2, investing 110-minus-age with 85% at 25 and 50% at 60. Coverage kept 12 of 13 must-haves fully; the only gap is K07 Partial, where the spectrum middle rows are compressed into endpoints. Concision is perfect at 43 unique claims. Computation gives 0.7753 with no redundancy penalty; the score trails the other samples only through the K07 partial, which is correctly penalized in must_recall rather than anywhere else.",
+        "source_id": "06_valuing_consistency",
+        "tradeoff_note": "Full-length outline is justified: near-complete must-recall at zero redundancy, and the one coverage gap (spectrum middle rows) would cost a little length to close, not a pruning.",
+        "verdict": "Borderline",
+        "weighted_score": 0.7753,
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Borderline",
+      "weighted_score": 0.7753
+    },
+    {
+      "id": "07_intentionalism",
+      "words": 2643,
+      "faithfulness": {
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 0.9808,
+        "partially_supported": 1,
+        "supported": 51,
+        "total_claims": 52,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 0,
+        "must_have_present": 14,
+        "must_have_total": 14,
+        "must_recall": 1.0,
+        "overall_present": 15,
+        "overall_recall": 1.0,
+        "total_points": 15
+      },
+      "concision": {
+        "duplicates": 3,
+        "redundancy_rate": 0.0577,
+        "scored_claims": 52,
+        "structured_tokens": 791,
+        "tokens_per_unique_claim": 16.14,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 49
+      },
+      "top": {
+        "computation": "weighted_score = 0.4*faithfulness_precision + 0.4*must_recall - 0.2*redundancy_rate = 0.4*0.9808 + 0.4*1.0 - 0.2*0.0577 = 0.39232 + 0.4 - 0.01154 = 0.78078, rounded to 0.7808",
+        "fix_list": [
+          "Tighten C33 (L31): restore the 'every major decision and most minor ones' qualifier so the prescription matches source line 110",
+          "Merge C18 into C16 and C26 into C08 to remove the two cheapest duplications",
+          "Merge C42 into C35; the closing verdict adds nothing the shifter-payoff claim lacks"
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 0.9808,
+          "must_recall": 1.0,
+          "overall_recall": 1.0,
+          "redundancy_rate": 0.0577,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Gate checks: critical_errors 0 <= 0 max pass; faithfulness_precision 0.9808 >= 0.95 min pass; must_recall 1.0 >= 0.9 min pass; redundancy 0.0577 <= 0.15 max pass. No Contradicted or Unverifiable claims exist. The single Partial (C33) is Harmless summary-level absolutizing of 'every major and most minor' to 'every', and the affected prescription point still maps Present, so no Borderline trigger: no Partial affects a Must-have point's presence. Tradeoff: coverage is perfect at zero faithfulness cost beyond one harmless qualifier; redundancy 0.0577 is well under max, so the outline's length is justified by its full appendix coverage. Verdict Pass.",
+        "source_id": "07_intentionalism",
+        "tradeoff_note": "Full must-recall with near-perfect precision; the small redundancy (three flagged merges) buys complete appendix coverage and stays well under max, so length is justified.",
+        "verdict": "Pass",
+        "weighted_score": 0.7808,
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Pass",
+      "weighted_score": 0.7808
+    },
+    {
+      "id": "08_empathy_sympathy_compassion_matrix",
+      "words": 1321,
+      "faithfulness": {
+        "total_claims": 25,
+        "supported": 25,
+        "partially_supported": 0,
+        "unverifiable": 0,
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 1.0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 0,
+        "must_have_present": 11,
+        "must_have_total": 11,
+        "must_recall": 1.0,
+        "overall_present": 14,
+        "overall_recall": 1.0,
+        "total_points": 14
+      },
+      "concision": {
+        "duplicates": 0,
+        "redundancy_rate": 0.0,
+        "scored_claims": 25,
+        "structured_tokens": 626,
+        "tokens_per_unique_claim": 25.04,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 25
+      },
+      "top": {
+        "computation": "weighted_score = 0.4*faithfulness_precision + 0.4*must_recall - 0.2*redundancy_rate = 0.4*1.0 + 0.4*1.0 - 0.2*0.0 = 0.4 + 0.4 - 0.0 = 0.8",
+        "fix_list": [],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 1.0,
+          "must_recall": 1.0,
+          "overall_recall": 1.0,
+          "redundancy_rate": 0.0,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Gate checks: critical_errors 0 <= 0 max pass; faithfulness_precision 1.0 >= 0.95 min pass; must_recall 1.0 >= 0.9 min pass; redundancy 0.0 <= 0.15 max pass. All 25 claims Supported with zero Partial/Unverifiable, so no Borderline trigger. Distinction audit (the focus for this structured-comparison sample): every full/partial/blank cell cited in C04-C21 was verified against the source table rows; no component/profile collapse (C11/C12 scope to components with 6.2 preserving the embodiment relation; C08 reproduces note 5's own phrasing). Coverage is complete at zero redundancy cost. Verdict Pass with no fixes.",
+        "source_id": "08_empathy_sympathy_compassion_matrix",
+        "tradeoff_note": "Perfect precision and recall with zero redundancy; the dense cell-level evidence pattern justifies every token, so there is no concision/coverage tradeoff to resolve.",
+        "verdict": "Pass",
+        "weighted_score": 0.8,
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Pass",
+      "weighted_score": 0.8
+    },
+    {
+      "id": "09_not_even_wrong",
+      "words": 1345,
+      "faithfulness": {
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 0.9706,
+        "partially_supported": 1,
+        "supported": 33,
+        "total_claims": 34,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 0,
+        "must_have_present": 11,
+        "must_have_total": 11,
+        "must_recall": 1.0,
+        "overall_present": 12,
+        "overall_recall": 1.0,
+        "total_points": 12
+      },
+      "concision": {
+        "duplicates": 0,
+        "redundancy_rate": 0.0,
+        "scored_claims": 34,
+        "structured_tokens": 612,
+        "tokens_per_unique_claim": 18.0,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 34
+      },
+      "top": {
+        "computation": "weighted_score = 0.4*faithfulness_precision + 0.4*must_recall - 0.2*redundancy_rate = 0.4*0.9706 + 0.4*1.0 - 0.2*0.0 = 0.38824 + 0.4 - 0.0 = 0.78824, rounded to 0.7882",
+        "fix_list": [
+          "Reword C16 (L15): restore 'tend to' on the algorithm half and soften 'fake personal authenticity' to 'manufacture a sense of authenticity' per source line 32",
+          "Optionally restore dropped color in C05/C14 (Atiyah age/prizes, thousands-or-millions) if outline budget allows, lowest priority"
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 0.9706,
+          "must_recall": 1.0,
+          "overall_recall": 1.0,
+          "redundancy_rate": 0.0,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Gate checks: critical_errors 0 <= 0 max pass; faithfulness_precision 0.9706 >= 0.95 min pass; must_recall 1.0 >= 0.9 min pass; redundancy 0.0 <= 0.15 max pass. Polarity audit (the focus for this negation-heavy sample): every not/never/no/without/only checked, including C06 (not simply incorrect), C09 (isn't just/it's), C17 (not purely rational), C21-C24 (without, doesn't, isn't, hadn't), C29 (double negation), C31 (isn't/it's). Zero flipped or dropped negations, hence zero Critical errors. The single Partial (C16, Minor) is a hedge-drop plus pejorative spin, not a polarity flip, and K06 stays Present via C13-C15 plus C16's intact mechanism, so no Borderline trigger: no Must-have point's presence is affected. weighted = 0.7882. Verdict Pass.",
+        "source_id": "09_not_even_wrong",
+        "tradeoff_note": "Full recall with zero redundancy; the one Minor hedge-drop is the only length-neutral fix, so no coverage/concision tradeoff arises.",
+        "verdict": "Pass",
+        "weighted_score": 0.7882,
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Pass",
+      "weighted_score": 0.7882
+    },
+    {
+      "id": "10_parde_begardan_fa",
+      "words": 639,
+      "faithfulness": {
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 0.96,
+        "partially_supported": 1,
+        "supported": 24,
+        "total_claims": 25,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 2,
+        "must_have_present": 8,
+        "must_have_total": 10,
+        "must_recall": 0.9,
+        "overall_present": 9,
+        "overall_recall": 0.9091,
+        "total_points": 11
+      },
+      "concision": {
+        "duplicates": 0,
+        "redundancy_rate": 0.0,
+        "scored_claims": 25,
+        "structured_tokens": 460,
+        "tokens_per_unique_claim": 18.4,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 25
+      },
+      "top": {
+        "computation": "weighted_score = 0.4*faithfulness_precision + 0.4*must_recall - 0.2*redundancy_rate = 0.4*0.96 + 0.4*0.9 - 0.2*0.0 = 0.384 + 0.36 - 0.0 = 0.744",
+        "weighted_score": 0.744,
+        "fix_list": [
+          "Restore the 'I think' hedge on the Zard Malijeh song title (C04): re-add the uncertainty instead of stating it as fact.",
+          "Add the dropped Must-have numbers: the 20k pre-discount price (K02) and the six-months-later start of lessons plus Ershad move (K03).",
+          "No concision pruning needed: redundancy 0.0 is below the 0.15 max, so added numbers will not break the length gate."
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 0.96,
+          "must_recall": 0.9,
+          "overall_recall": 0.9091,
+          "redundancy_rate": 0.0,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Hard gates: critical_errors 0 <= 0 max pass; faithfulness_precision 0.96 >= 0.95 min pass; must_recall 0.9 >= 0.9 min pass (equal passes since the rule fails only below minimum). No Contradicted claims exist; the single Partial (C04, dropped 'I think' hedge on the song title, Minor) affects K01-adjacent detail that is Nice-level rather than a Must-have core, so Borderline is not triggered and the verdict is Pass. Coverage partials K02 (missing 20k) and K03 (missing six-months-later/Ershad timing) are omissions, not contradicted claims, and keep must_recall exactly at the gate. Concision is clean (redundancy 0.0, trivia 0.0), so the weighted score 0.744 reflects solid fidelity and coverage with no length abuse.",
+        "source_id": "10_parde_begardan_fa",
+        "tradeoff_note": "Coverage is complete on meaning with only dropped numeric hedges; adding the missing numbers costs almost no length since redundancy is zero.",
+        "verdict": "Pass",
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Pass",
+      "weighted_score": 0.744
+    },
+    {
+      "id": "11_finding_a_phone",
+      "words": 3120,
+      "faithfulness": {
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 0.96875,
+        "partially_supported": 1,
+        "supported": 31,
+        "total_claims": 32,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 1,
+        "must_have_present": 10,
+        "must_have_total": 11,
+        "must_recall": 0.9545,
+        "overall_present": 11,
+        "overall_recall": 0.9231,
+        "total_points": 13
+      },
+      "concision": {
+        "duplicates": 0,
+        "redundancy_rate": 0.0,
+        "scored_claims": 32,
+        "structured_tokens": 596,
+        "tokens_per_unique_claim": 18.625,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 32
+      },
+      "top": {
+        "computation": "weighted_score = 0.4*faithfulness_precision + 0.4*must_recall - 0.2*redundancy_rate = 0.4*0.96875 + 0.4*0.9545 - 0.2*0.0 = 0.3875 + 0.3818 - 0.0 = 0.7693",
+        "weighted_score": 0.7693,
+        "fix_list": [
+          "Downgrade C11/L11 from week-long to long battery life in the requirements, keeping the week-long figure scoped to the one Ulefone model (C15/K06), since C11's qualifier upgrade drives K04 to Partial.",
+          "Optionally add the mountains music/reading/notes vignette to fully close Nice point K13.",
+          "No concision pruning needed: redundancy 0.0 is below the 0.15 max."
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 0.96875,
+          "must_recall": 0.9545,
+          "overall_recall": 0.9231,
+          "redundancy_rate": 0.0,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Hard gates all pass: critical_errors 0 <= 0, faithfulness_precision 0.9688 >= 0.95, must_recall 0.9545 >= 0.9, redundancy 0.0 <= 0.15. No Contradicted claims. However the single Partial claim C11 (week-long stated as a requirement, Minor) directly affects Must-have point K04 (requirements qualifier), which meets the Borderline condition: gates pass on numbers but a Partial claim touches a Must-have point, so human review is advised rather than a clean Pass. Weighted score 0.7693 is computed for ranking among passes. Concision is clean and never compensates for anything.",
+        "source_id": "11_finding_a_phone",
+        "tradeoff_note": "Near-complete coverage and fidelity at zero redundancy; fixing the battery qualifier costs one word and removes the only Borderline flag.",
+        "verdict": "Borderline",
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Borderline",
+      "weighted_score": 0.7693
+    },
+    {
+      "id": "12_lets_talk_privacy",
+      "words": 2803,
+      "faithfulness": {
+        "contradicted": 0,
+        "critical_errors": 0,
+        "faithfulness_precision": 1.0,
+        "partially_supported": 0,
+        "supported": 34,
+        "total_claims": 34,
+        "unverifiable": 0
+      },
+      "coverage": {
+        "must_have_missing": 0,
+        "must_have_partial": 2,
+        "must_have_present": 10,
+        "must_have_total": 12,
+        "must_recall": 0.9167,
+        "overall_present": 11,
+        "overall_recall": 0.9231,
+        "total_points": 13
+      },
+      "concision": {
+        "duplicates": 0,
+        "redundancy_rate": 0.0,
+        "scored_claims": 34,
+        "structured_tokens": 600,
+        "tokens_per_unique_claim": 17.6471,
+        "trivia": 0,
+        "trivia_rate": 0.0,
+        "unique": 34
+      },
+      "top": {
+        "computation": "weighted_score = 0.4*faithfulness_precision + 0.4*must_recall - 0.2*redundancy_rate = 0.4*1.0 + 0.4*0.9167 - 0.2*0.0 = 0.4 + 0.3667 - 0.0 = 0.7667",
+        "weighted_score": 0.7667,
+        "fix_list": [
+          "Add the dropped Must-have numbers where they belong: 30-digit passphrase and 64-char recovery key in 5.1/L17 (K08), and AES-256 plus server-provided salt in section 4/L10-L11 (K05).",
+          "No fidelity fixes needed: zero Partial, Unverifiable, or Contradicted claims.",
+          "No concision pruning needed: redundancy 0.0 is below the 0.15 max, so the added numbers fit the length gate."
+        ],
+        "inputs": {
+          "critical_errors": 0,
+          "faithfulness_precision": 1.0,
+          "must_recall": 0.9167,
+          "overall_recall": 0.9231,
+          "redundancy_rate": 0.0,
+          "trivia_rate": 0.0
+        },
+        "judge": "overall",
+        "judge_version": "1.0.0",
+        "model": "muse-spark-1.3-contributor-free 2026-09-11",
+        "reasoning": "Hard gates all pass: critical_errors 0 <= 0, faithfulness_precision 1.0 >= 0.95, must_recall 0.9167 >= 0.9, redundancy 0.0 <= 0.15. No claim carries Partial, Unverifiable, or Contradicted, so the Borderline condition (a Partial/Unverifiable claim affecting a Must-have point) is not met even though coverage marks K05 and K08 Partial for dropped numbers; those are omissions, not false claims, and no contradicted claim backs any point. Verdict Pass. Weighted score 0.7667 reflects perfect fidelity with strong coverage at zero redundancy.",
+        "source_id": "12_lets_talk_privacy",
+        "tradeoff_note": "Fidelity is perfect and length is lean, so restoring the dropped key numbers is pure coverage gain with no concision cost.",
+        "verdict": "Pass",
+        "weights_used": {
+          "coverage_must_recall": 0.4,
+          "faithfulness_precision": 0.4,
+          "redundancy_penalty": 0.2
+        }
+      },
+      "verdict": "Pass",
+      "weighted_score": 0.7667
+    }
+  ]
+}

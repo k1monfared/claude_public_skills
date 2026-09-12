@@ -1,0 +1,123 @@
+{
+  "summary": {
+    "total_samples": 12,
+    "scored_samples": 0,
+    "pass": 0,
+    "borderline": 0,
+    "fail": 0,
+    "avg_faithfulness_precision": null,
+    "avg_must_recall": null,
+    "avg_redundancy": null,
+    "avg_weighted_score": null
+  },
+  "rows": [
+    {
+      "id": "01_what_is_mathematics",
+      "words": 6618,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "02_case_for_transparent_government",
+      "words": 6741,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "03_cant_stop_addicted_to_shindig",
+      "words": 5799,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "04_house_hunting_shenanigans",
+      "words": 3801,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "05_manufacturing_taste",
+      "words": 2918,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "06_valuing_consistency",
+      "words": 2920,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "07_intentionalism",
+      "words": 2643,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "08_empathy_sympathy_compassion_matrix",
+      "words": 1321,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "09_not_even_wrong",
+      "words": 1345,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "10_parde_begardan_fa",
+      "words": 639,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "11_finding_a_phone",
+      "words": 3120,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    },
+    {
+      "id": "12_lets_talk_privacy",
+      "words": 2803,
+      "faithfulness": null,
+      "coverage": null,
+      "concision": null,
+      "top": null,
+      "verdict": "missing"
+    }
+  ]
+}

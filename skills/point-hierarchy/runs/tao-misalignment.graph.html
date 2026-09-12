@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Point Graph</title>
+<style>
+  :root {
+    --bg: #f7f7f4;
+    --panel-bg: #ffffff;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --accent: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 10px 14px; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line);
+  }
+  #topbar h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 650; }
+  #topbar .src { color: var(--muted); font-size: 12px; margin-right: 6px; }
+  #topbar button, #topbar input[type="text"] {
+    font: inherit; font-size: 12.5px; padding: 5px 10px; border: 1px solid var(--line);
+    border-radius: 7px; background: #fff; color: var(--ink); cursor: pointer;
+  }
+  #topbar button:hover { border-color: var(--accent); }
+  #topbar input[type="range"] { width: 120px; }
+  #searchBox { width: 180px; cursor: text; }
+  #searchCount { font-size: 12px; color: var(--muted); }
+  #canvasWrap { position: absolute; inset: 0; overflow: auto; }
+  #canvasWrap.shifted { right: 354px; }
+  #canvasWrap::-webkit-scrollbar { width: 10px; height: 10px; }
+  #canvasWrap::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 5px; }
+  svg { display: block; cursor: grab; }
+  svg.panning { cursor: grabbing; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #blPanel {
+    position: fixed; left: 12px; bottom: 12px; z-index: 20; max-width: 420px;
+    display: flex; flex-direction: column; gap: 8px; align-items: stretch;
+  }
+  #help, #legend {
+    background: rgba(255,255,255,.94); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; font-size: 12px;
+  }
+  #helpHead, #legendHead {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    cursor: pointer; font-weight: 650; font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em; user-select: none;
+  }
+  #help.collapsed #helpBody, #legend.collapsed #legendBody { display: none; }
+  #helpToggle, #legendToggle { border: none; background: none; cursor: pointer; color: var(--muted); font-size: 14px; line-height: 1; padding: 0 2px; }
+  #helpBody { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; color: var(--ink); }
+  #legend .lg-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; align-items: center; }
+  #helpBody .k { color: var(--accent); font-weight: 600; }
+  #legend .chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px;
+    border: 1px solid var(--line); border-radius: 999px; background: #fff; cursor: pointer;
+    user-select: none;
+  }
+  #legend .chip.off { opacity: .35; text-decoration: line-through; }
+  #legend .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  #legend .lswatch { width: 22px; height: 0; border-top-width: 2.4px; display: inline-block; }
+  #panel {
+    position: fixed; top: 52px; right: 12px; bottom: 12px; width: 330px; z-index: 25;
+    background: var(--panel-bg); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px; overflow-y: auto; display: none; box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  }
+  #panel.open { display: block; }
+  #panel h2 { font-size: 13px; margin: 0 0 8px; color: var(--muted); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+  #panel .close { float: right; border: none; background: none; font-size: 16px; cursor: pointer; color: var(--muted); }
+  #panel .tagrow { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  #panel .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; }
+  #panel .text { font-size: 14px; line-height: 1.45; margin-bottom: 10px; }
+  #panel .sect { font-size: 11.5px; font-weight: 650; color: var(--muted); margin: 12px 0 4px; text-transform: uppercase; letter-spacing: .05em; }
+  #panel .linkrow { display: block; width: 100%; text-align: left; font: inherit; font-size: 12.5px; padding: 5px 7px; margin: 2px 0; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; }
+  #panel .linkrow:hover, #panel .kbd-focus { border-color: var(--accent); }
+  #panel .kbd-focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #panel .linkrow .etype { color: var(--accent); font-weight: 600; }
+  #panel .note { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  #panel .srcbtn { display: inline-block; font: inherit; font-size: 12px; padding: 3px 8px; margin: 2px 4px 2px 0; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; }
+  #panel .passage { display: none; font-size: 12.5px; line-height: 1.5; background: #f7f7f4; border: 1px solid var(--line); border-radius: 7px; padding: 8px; margin: 4px 0; }
+  #panel .passage.show { display: block; }
+  .node rect { stroke-width: 1.2; }
+  .node { cursor: pointer; }
+  .node.dim { opacity: .12; pointer-events: none; }
+  .node.match rect { stroke: #f59e0b; stroke-width: 3; }
+  .node.selected rect { stroke: #111827; stroke-width: 2.6; }
+  .edge { fill: none; }
+  .edge.hl { stroke-width: 3; }
+</style>
+</head>
+<body>
+<div id="topbar">
+  <h1 id="title"></h1><span class="src" id="srcname"></span>
+  <button id="btnAll">All layers</button>
+  <button id="btnFit">Fit</button>
+  <button id="btnReset">Reset</button>
+  <input type="text" id="searchBox" placeholder="search ideas...">
+  <span id="searchCount"></span>
+</div>
+<div id="canvasWrap"><svg id="canvas">
+  <defs id="defs"></defs>
+  <g id="gEdges"></g>
+  <g id="gXEdges"></g>
+  <g id="gNodes"></g>
+  <g id="gTop"></g>
+</svg></div>
+<div id="blPanel">
+  <div id="help">
+    <div id="helpHead"><span>help</span><button id="helpToggle" title="collapse/expand help">&#8722;</button></div>
+    <div id="helpBody">
+      <div><span class="k">scroll</span> move, <span class="k">shift+scroll</span> sideways, <span class="k">ctrl+scroll</span> zoom</div>
+      <div><span class="k">arrows</span> navigate: up/down same layer, left parent, right first child</div>
+      <div><span class="k">enter</span> sidebar, <span class="k">esc</span> back to graph</div>
+      <div><span class="k">ctrl+1..9</span> fold to layer, <span class="k">ctrl+0</span> all layers</div>
+      <div><span class="k">click</span> select, <span class="k">+&#8722;</span> fold branch, <span class="k">dblclick</span> fit view</div>
+    </div>
+  </div>
+  <div id="legend">
+    <div id="legendHead"><span>legend</span><button id="legendToggle" title="collapse/expand legend">&#8722;</button></div>
+    <div id="legendBody"></div>
+  </div>
+</div>
+<div id="panel"></div>
+<script>
+const GRAPH = {"meta": {"title": "A Severe Misalignment of AI in Mathematics (Terence Tao, 2026)", "source": "https://terrytao.wordpress.com/2026/09/11/a-severe-misalignment-of-ai-in-mathematics/", "passages": {"¶1": "I am proud to be among the list of 25 initial signatories — all Fields Medallists — to the declaration below, which grew out of discussions between ourselves over the last week.", "¶2": "We have also posted our declaration on this web page, and (similarly to the Leiden declaration) invite further signatures. (It is unfortunate that we did not have the time to have a more consultative process, as with Leiden; but we decided that the urgency of the situation was such that we needed to release a statement sooner rather than later.)", "¶3": "See also this recent article in the Economist regarding our declaration.", "¶4": "Over the last few months, the mathematical capabilities of LLMs have improved dramatically, to the point that they can solve major outstanding problems in many fields of mathematics.", "¶5": "However, the push by AI companies to solve mathematical problems as a benchmark is detrimental to the science of mathematics, and to the mathematical community. The goals of the AI companies and the goals of the mathematical community are severely misaligned.", "¶6": "We see these as part of broader alignment issues impacting other scientific and creative professions, as well as the whole of society.", "¶7": "Research mathematics deals with understanding basic structures of shapes, numbers, and natural phenomena. Over the course of generations, it has built a large corpus of sophisticated ideas, methods, abstractions, and other tools to comprehend the mathematical landscape. In turn, modern technologies and sciences are based on mathematical tools.", "¶8": "Famous problems have often served as landmarks and lighthouses against which one can measure an improved understanding of this landscape.", "¶9": "Solving one of these problems has been a certain sign of new insights and interesting methods, which would then be studied by a community of mathematicians, through a long and arduous process of talks, discussions, simplifications.", "¶10": "At the end of this process, one will ideally find a textbook presentation of the results suitable for any graduate or even undergraduate student to study.", "¶11": "Some of the mathematical ideas pursue their journey even further to become, decades or centuries after, tools that are understood and used by the whole population.", "¶12": "The mathematical community functions, in many ways, as a miniature version of humanity.", "¶13": "It consists of individuals using a wide variety of different approaches, joined by core values.", "¶14": "The most precious resources of our profession are students and ideas, and these we nurture with great care.", "¶15": "We feel responsible to let them grow to their full potential, until they can live a life of their own in the mathematical world.", "¶16": "For students we often suggest problems with the core intention of developing skills making them well-positioned for advances in research and elsewhere.", "¶17": "Our ideas we disseminate in talks, private discussions and careful writeups, connecting them to the previous ideas of others.", "¶18": "These processes invariably take time and are based on human interaction.", "¶19": "In recent months, the success of AI in solving major mathematical problems has made headlines even outside mathematical circles.", "¶20": "But solving problems is only a tool and proxy for achieving the primary goal of conceptual understanding and insight.", "¶21": "Forgetting this in the world of AI may turn the tool against the primary goal.", "¶22": "Indeed, the mass production at faster and faster pace of “true/false” statements could destroy fertile ground instead of breathing life into new ideas.", "¶23": "Often these solutions are announced in a rush, leaving no time for a proper writeup, the isolation of new methods and ideas, and citing relevant previous work of others.", "¶24": "As in all creative professions, this raises severe attribution and plagiarism questions.", "¶25": "Moreover, without the willing mathematicians who must take care of their development and integration into the mathematical canon, AI-conceived ideas would never become fully alive and the crucial human transmission chain between mathematicians would be lost.", "¶26": "We are witnessing a general threat to intellectual work, with misalignment between the outcome of the use of AI and its initial purpose.", "¶27": "In many fields and activities, years of training have traditionally served not only to produce a final answer or product, but also to develop understanding and the ability to formulate new questions and ideas.", "¶28": "However, building on a vast body of previous human work, AI systems are becoming increasingly capable of producing the results of such work directly, and these goals cease to align.", "¶29": "The issues the mathematical community faces now are similar to issues that other scientific and creative professions are facing, and indicate issues that all of humanity might face: how to make sure that, as AI changes the way work is done, we do not lose sight of what that work was meant to achieve in the first place.", "¶30": "AI offers the potential of enhancing and accelerating genuine mathematical study and understanding.", "¶31": "Mathematics as a profession will need to adapt to these changes in several ways.", "¶32": "However, whether these changes ultimately benefit the field or have a destructive effect will in large part be determined by the decisions of the humans in control of this new technology.", "¶33": "These issues must be addressed urgently, in the mathematical community, by the companies developing these technologies and, more broadly, by a society that will confront similar problems in many other forms of intellectual work.", "¶34": "Signed by 25 Fields Medallists: Artur Avila (2014), Manjul Bhargava (2014), Caucher Birkar (2018), Pierre Deligne (1978), Yu Deng (2026), Simon Donaldson (1986), Hugo Duminil-Copin (2022), Alessio Figalli (2018), Martin Hairer (2014), June Huh (2022), Maxim Kontsevich (1998), Elon Lindenstrauss (2010), Pierre-Louis Lions (1994), James Maynard (2022), Curt McMullen (1998), Shigefumi Mori (1990), Ngô Bảo Châu (2010), Andrei Okounkov (2006), Peter Scholze (2018), Stanislav Smirnov (2010), Terence Tao (2006), Maryna Viazovska (2022), Cédric Villani (2010), Wendelin Werner (2006), Efim Zelmanov (1994)."}, "edgeTypes": {"supports": {"direction": "directed", "inverse": "supported-by", "style": "solid green"}, "exemplifies": {"direction": "directed", "inverse": "exemplified-by", "style": "dotted green"}, "contradicts": {"direction": "symmetric", "inverse": "contradicts", "style": "solid red"}, "qualifies": {"direction": "directed", "inverse": "qualified-by", "style": "dashed blue"}, "concedes": {"direction": "directed", "inverse": "conceded-by", "style": "dashed gray"}, "restates": {"direction": "symmetric", "inverse": "restates", "style": "dotted gray"}, "precondition": {"direction": "directed", "inverse": "prerequisite-of", "style": "solid orange"}, "contains": {"direction": "directed", "inverse": "contained-in", "style": "tree"}}}, "nodes": [{"id": "0", "type": "summary", "text": "Twenty-five Fields Medallists warn that benchmark-driven AI problem-solving is severely misaligned with the goals of the mathematical community.", "attribution": "author", "source": ["¶1", "¶5"]}, {"id": "1", "type": "claim", "text": "Twenty-five Fields Medallists jointly signed a declaration, posted it publicly, and invite further signatures.", "attribution": "author", "source": ["¶1", "¶2"]}, {"id": "1.1", "type": "nuance", "text": "The statement was released urgently, without the consultative process used for the earlier Leiden declaration.", "attribution": "author", "source": ["¶2"]}, {"id": "1.2", "type": "evidence", "text": "An Economist article covers the declaration.", "attribution": "reported", "source": ["¶3"]}, {"id": "1.3", "type": "evidence", "text": "The 25 signatories are all Fields Medallists, from Deligne (1978) to Deng (2026).", "attribution": "author", "source": ["¶34"]}, {"id": "2", "type": "claim", "text": "Using mathematics as an AI benchmark is detrimental to the science and to its community.", "attribution": "author", "source": ["¶5"]}, {"id": "2.1", "type": "evidence", "text": "LLM mathematical capability has improved dramatically, now solving major outstanding problems across many fields.", "attribution": "author", "source": ["¶4"]}, {"id": "2.2", "type": "claim", "text": "The goals of AI companies and of the mathematical community are severely misaligned.", "attribution": "author", "source": ["¶5"]}, {"id": "2.3", "type": "claim", "text": "This is part of broader alignment issues affecting other professions and society at large.", "attribution": "author", "source": ["¶6"]}, {"id": "3", "type": "claim", "text": "Research mathematics seeks understanding of basic structures; its accumulated tools underpin modern technologies and sciences.", "attribution": "author", "source": ["¶7"]}, {"id": "4", "type": "claim", "text": "Famous problems serve as landmarks, and solving one signals insights the community slowly digests.", "attribution": "author", "source": ["¶8", "¶9"]}, {"id": "4.1", "type": "claim", "text": "Famous problems are landmarks and lighthouses for measuring improved understanding.", "attribution": "author", "source": ["¶8"]}, {"id": "4.2", "type": "claim", "text": "A solution is a certain sign of new insights and interesting methods.", "attribution": "author", "source": ["¶9"]}, {"id": "4.3", "type": "claim", "text": "The community studies results through long, arduous talks, discussions, and simplifications.", "attribution": "author", "source": ["¶9"]}, {"id": "4.4", "type": "nuance", "text": "Ideally the journey ends in a textbook any undergraduate can study.", "attribution": "author", "source": ["¶10"]}, {"id": "4.5", "type": "claim", "text": "Some ideas become tools used by the whole population, decades or centuries later.", "attribution": "author", "source": ["¶11"]}, {"id": "5", "type": "claim", "text": "The mathematical community works as a miniature humanity, individuals joined by core values.", "attribution": "author", "source": ["¶12", "¶13"]}, {"id": "5.1", "type": "claim", "text": "Its most precious resources are students and ideas, nurtured to live lives of their own.", "attribution": "author", "source": ["¶14", "¶15"]}, {"id": "5.2", "type": "claim", "text": "Students get problems chosen to develop research-ready skills.", "attribution": "author", "source": ["¶16"]}, {"id": "5.3", "type": "claim", "text": "Ideas are disseminated through talks, discussions, and careful writeups connected to prior work.", "attribution": "author", "source": ["¶17"]}, {"id": "5.4", "type": "claim", "text": "These processes invariably take time and rest on human interaction.", "attribution": "author", "source": ["¶18"]}, {"id": "6", "type": "claim", "text": "Solving problems is only a proxy for the primary goal: conceptual understanding and insight.", "attribution": "author", "source": ["¶20"]}, {"id": "6.1", "type": "evidence", "text": "AI successes on major problems recently made headlines beyond mathematics.", "attribution": "author", "source": ["¶19"]}, {"id": "6.2", "type": "claim", "text": "Forgetting the proxy role in the AI world may turn the tool against the goal.", "attribution": "author", "source": ["¶21"]}, {"id": "6.3", "type": "claim", "text": "Mass-producing true/false statements at ever faster pace could destroy fertile ground rather than inspire ideas.", "attribution": "author", "source": ["¶22"]}, {"id": "7", "type": "claim", "text": "Current AI practice brings concrete harms to the mathematical ecosystem.", "attribution": "author", "source": ["¶23", "¶25"]}, {"id": "7.1", "type": "claim", "text": "Solutions announced in a rush leave no time for proper writeup, method isolation, or citing prior work.", "attribution": "author", "source": ["¶23"]}, {"id": "7.2", "type": "claim", "text": "This raises severe attribution and plagiarism questions, as in all creative professions.", "attribution": "author", "source": ["¶24"]}, {"id": "7.3", "type": "claim", "text": "Without mathematicians integrating AI ideas into the canon, the human transmission chain is lost.", "attribution": "author", "source": ["¶25"]}, {"id": "8", "type": "claim", "text": "The misalignment is a general threat to intellectual work, reaching all of humanity.", "attribution": "author", "source": ["¶26", "¶29"]}, {"id": "8.1", "type": "claim", "text": "Long training traditionally built understanding and the capacity to pose new questions, not just answers.", "attribution": "author", "source": ["¶27"]}, {"id": "8.2", "type": "claim", "text": "AI increasingly delivers the final results of such work directly.", "attribution": "author", "source": ["¶28"]}, {"id": "8.3", "type": "claim", "text": "As AI changes how work is done, humanity must not lose sight of work's purpose.", "attribution": "author", "source": ["¶29"]}, {"id": "9", "type": "claim", "text": "The outcome depends on human decisions, and the issues demand urgent action.", "attribution": "author", "source": ["¶32", "¶33"]}, {"id": "9.1", "type": "claim", "text": "AI holds genuine potential to enhance and accelerate mathematical study and understanding.", "attribution": "author", "source": ["¶30"]}, {"id": "9.2", "type": "claim", "text": "Mathematics as a profession will need to adapt in several ways.", "attribution": "author", "source": ["¶31"]}, {"id": "9.3", "type": "nuance", "text": "Benefit or destruction will largely be decided by the humans controlling the technology.", "attribution": "author", "source": ["¶32"]}, {"id": "9.4", "type": "claim", "text": "The issues must be addressed urgently by the community, the companies, and society.", "attribution": "author", "source": ["¶33"]}], "edges": [{"from": "0", "to": "1", "type": "contains"}, {"from": "0", "to": "2", "type": "contains"}, {"from": "0", "to": "3", "type": "contains"}, {"from": "0", "to": "4", "type": "contains"}, {"from": "0", "to": "5", "type": "contains"}, {"from": "0", "to": "6", "type": "contains"}, {"from": "0", "to": "7", "type": "contains"}, {"from": "0", "to": "8", "type": "contains"}, {"from": "0", "to": "9", "type": "contains"}, {"from": "1", "to": "1.1", "type": "contains"}, {"from": "1", "to": "1.2", "type": "contains"}, {"from": "1", "to": "1.3", "type": "contains"}, {"from": "2", "to": "2.1", "type": "contains"}, {"from": "2", "to": "2.2", "type": "contains"}, {"from": "2", "to": "2.3", "type": "contains"}, {"from": "4", "to": "4.1", "type": "contains"}, {"from": "4", "to": "4.2", "type": "contains"}, {"from": "4", "to": "4.3", "type": "contains"}, {"from": "4", "to": "4.4", "type": "contains"}, {"from": "4", "to": "4.5", "type": "contains"}, {"from": "5", "to": "5.1", "type": "contains"}, {"from": "5", "to": "5.2", "type": "contains"}, {"from": "5", "to": "5.3", "type": "contains"}, {"from": "5", "to": "5.4", "type": "contains"}, {"from": "6", "to": "6.1", "type": "contains"}, {"from": "6", "to": "6.2", "type": "contains"}, {"from": "6", "to": "6.3", "type": "contains"}, {"from": "7", "to": "7.1", "type": "contains"}, {"from": "7", "to": "7.2", "type": "contains"}, {"from": "7", "to": "7.3", "type": "contains"}, {"from": "8", "to": "8.1", "type": "contains"}, {"from": "8", "to": "8.2", "type": "contains"}, {"from": "8", "to": "8.3", "type": "contains"}, {"from": "9", "to": "9.1", "type": "contains"}, {"from": "9", "to": "9.2", "type": "contains"}, {"from": "9", "to": "9.3", "type": "contains"}, {"from": "9", "to": "9.4", "type": "contains"}, {"from": "6", "to": "2", "type": "supports", "source": ["¶20", "¶21", "¶22"], "note": "the proxy argument is the ground for the detriment claim"}, {"from": "7", "to": "2", "type": "supports", "source": ["¶23", "¶24", "¶25"], "note": "concrete harms instantiate the detriment"}, {"from": "4", "to": "6.3", "type": "supports", "source": ["¶9", "¶22"], "note": "the fertile ground at risk is the slow communal digestion of solutions"}, {"from": "5", "to": "6.3", "type": "supports", "source": ["¶14", "¶22"], "note": "students and ideas are the fertile ground mass production threatens"}, {"from": "5.4", "to": "7.1", "type": "contradicts", "source": ["¶18", "¶23"], "note": "processes that take time vs announcements in a rush"}, {"from": "2.3", "to": "8", "type": "restates", "source": ["¶6", "¶26"], "note": "the broader-scope claim announced early returns developed"}, {"from": "9.1", "to": "2", "type": "qualifies", "source": ["¶30"], "note": "AI's potential benefit qualifies the blanket detriment claim"}, {"from": "9.3", "to": "2", "type": "qualifies", "source": ["¶32"], "note": "the detriment is conditional, not inevitable"}, {"from": "1.1", "to": "9.4", "type": "restates", "source": ["¶2", "¶33"], "note": "urgency recurs: justifying the release speed, then demanding response"}]};
+
+const COL_GAP = 56, ROW_GAP = 14, PAD = 50, BODY_W = 240, LINE_H = 14, HEADER_H = 12, VPAD = 7, HPAD = 9;
+const FONT_STACK = "system-ui, -apple-system, 'Segoe UI', sans-serif";
+const FILL = {
+  summary: "#1f2937", theme: "#4f46e5", claim: "#dbeafe", evidence: "#dcfce7",
+  example: "#ccfbf1", counterpoint: "#fee2e2", rebuttal: "#ffedd5", nuance: "#ede9fe",
+  concession: "#f1f5f9", contradiction: "#fecaca", implicit: "#fef9c3"
+};
+const STROKE = {
+  summary: "#111827", theme: "#3730a3", claim: "#2563eb", evidence: "#16a34a",
+  example: "#0d9488", counterpoint: "#dc2626", rebuttal: "#ea580c", nuance: "#7c3aed",
+  concession: "#64748b", contradiction: "#b91c1c", implicit: "#ca8a04"
+};
+const DARKFILL = { summary: true, theme: true };
+const PALETTE = { green: "#16a34a", red: "#dc2626", blue: "#2563eb", gray: "#64748b", orange: "#ea580c", purple: "#7c3aed", teal: "#0d9488" };
+
+const registry = (GRAPH.meta && GRAPH.meta.edgeTypes) || {};
+const nodes = new Map();
+GRAPH.nodes.forEach(n => nodes.set(n.id, n));
+const children = new Map(), parent = new Map(), containsE = [], crossE = [];
+GRAPH.edges.forEach(e => {
+  if (e.type === "contains") {
+    containsE.push(e);
+    parent.set(e.to, e.from);
+    if (!children.has(e.from)) children.set(e.from, []);
+    children.get(e.from).push(e.to);
+  } else {
+    crossE.push(e);
+  }
+});
+children.forEach(list => list.sort(cmpIds));
+
+function depthOf(id) { return id === "0" ? 0 : id.split(".").length; }
+const maxDepth = Math.max(1, ...GRAPH.nodes.map(n => depthOf(n.id)));
+let showDepth = Math.min(1, maxDepth);
+let collapsed = new Set(), opened = new Set(), forceVisible = new Set();
+let hiddenNodeTypes = new Set(), hiddenEdgeTypes = new Set();
+let selected = null, searchQ = "", sideMode = false, sideIdx = 0;
+let z = 1;
+let pos = new Map(), sizes = new Map(), vis = new Set();
+let contentW = 800, contentH = 600;
+
+const wrap = document.getElementById("canvasWrap");
+const svg = document.getElementById("canvas");
+const gE = document.getElementById("gEdges");
+const gX = document.getElementById("gXEdges");
+const gN = document.getElementById("gNodes");
+const gTop = document.getElementById("gTop");
+const defs = document.getElementById("defs");
+const mBody = document.createElement("canvas").getContext("2d");
+const mHead = document.createElement("canvas").getContext("2d");
+mBody.font = `11.5px ${FONT_STACK}`;
+mHead.font = `9.5px ${FONT_STACK}`;
+
+function cmpIds(a, b) {
+  const A = a.split(".").map(Number), B = b.split(".").map(Number);
+  for (let i = 0; i < Math.max(A.length, B.length); i++) {
+    const d = (A[i] || 0) - (B[i] || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function textOf(id) { const n = nodes.get(id); return n ? n.text : id; }
+function styleOf(type) {
+  const st = (registry[type] && registry[type].style) || "solid gray";
+  const toks = String(st).split(/\s+/);
+  let color = PALETTE.gray, dash = "";
+  toks.forEach(t => {
+    if (t === "dashed") dash = "7 4";
+    if (t === "dotted") dash = "2 4";
+    if (PALETTE[t]) color = PALETTE[t];
+  });
+  return { color, dash };
+}
+
+function computeVisible() {
+  vis = new Set(forceVisible);
+  if (nodes.has("0")) vis.add("0");
+  const stack = [...vis];
+  while (stack.length) {
+    const p = stack.pop();
+    if (collapsed.has(p) && !forceVisible.has(p)) continue;
+    for (const c of children.get(p) || []) {
+      if (vis.has(c)) continue;
+      if (depthOf(c) <= showDepth || opened.has(p) || forceVisible.has(c)) {
+        vis.add(c);
+        stack.push(c);
+      }
+    }
+  }
+}
+
+function wrapText(text, maxW) {
+  const words = String(text).split(/\s+/).filter(Boolean);
+  const lines = [];
+  let cur = "";
+  for (const wd of words) {
+    const t = cur ? cur + " " + wd : wd;
+    if (!cur || mBody.measureText(t).width <= maxW) cur = t;
+    else { lines.push(cur); cur = wd; }
+  }
+  if (cur) lines.push(cur);
+  return lines.length ? lines : [""];
+}
+
+function measureNode(id) {
+  const n = nodes.get(id);
+  const bits = [id === "0" ? "summary" : id + " " + n.type];
+  if (n.attribution && n.attribution !== "author" && n.attribution !== "n/a") bits.push("[" + n.attribution + "]");
+  const header = bits.join("   ");
+  const lines = wrapText(n.text, BODY_W);
+  const wBody = Math.max(...lines.map(L => mBody.measureText(L).width));
+  const w = Math.max(wBody, mHead.measureText(header).width) + HPAD * 2;
+  const h = VPAD * 2 + HEADER_H + lines.length * LINE_H;
+  sizes.set(id, { w, h, lines, header });
+}
+
+function layout() {
+  sizes = new Map();
+  pos = new Map();
+  let ycur = 0;
+  const walk = id => {
+    measureNode(id);
+    const s = sizes.get(id);
+    const p = parent.get(id);
+    const x = id === "0" ? 0 : pos.get(p).x + pos.get(p).w + COL_GAP;
+    const kids = (children.get(id) || []).filter(c => vis.has(c));
+    if (!kids.length) {
+      pos.set(id, { x, y: ycur, w: s.w, h: s.h });
+      ycur += s.h + ROW_GAP;
+      return;
+    }
+    pos.set(id, { x, y: 0, w: s.w, h: s.h });
+    kids.forEach(walk);
+    const f = pos.get(kids[0]), l = pos.get(kids[kids.length - 1]);
+    const center = (f.y + f.h / 2 + l.y + l.h / 2) / 2;
+    pos.set(id, { x, y: center - s.h / 2, w: s.w, h: s.h });
+  };
+  if (nodes.has("0")) walk("0");
+  let maxX = 0, maxY = 0;
+  pos.forEach(r => {
+    r.x += PAD;
+    r.y += PAD;
+    maxX = Math.max(maxX, r.x + r.w);
+    maxY = Math.max(maxY, r.y + r.h);
+  });
+  contentW = Math.max(maxX + PAD, 800);
+  contentH = Math.max(maxY + PAD, 600);
+}
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+function pathBetween(a, b) {
+  const x1 = a.x + a.w, y1 = a.y + a.h / 2, x2 = b.x, y2 = b.y + b.h / 2;
+  if (x2 >= x1) {
+    const bend = Math.max(28, (x2 - x1) / 2);
+    return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
+  }
+  const xr = b.x + b.w, bend = 40;
+  return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${xr + bend} ${y2}, ${xr} ${y2}`;
+}
+function edgesFor(id) {
+  const out = [];
+  containsE.forEach(e => { if (e.from === id || e.to === id) out.push({ e, home: gE }); });
+  crossE.forEach(e => { if (e.from === id || e.to === id) out.push({ e, home: gX }); });
+  return out;
+}
+function setEdgeFocus(id, on) {
+  edgesFor(id).forEach(({ e, home }) => {
+    const el = e._el;
+    if (!el) return;
+    if (on) {
+      if (el.parentNode) gTop.appendChild(el);
+      el.classList.add("hl");
+    } else if (selected !== id) {
+      if (el.parentNode === gTop) home.appendChild(el);
+      el.classList.remove("hl");
+    }
+  });
+}
+function applySize() {
+  svg.setAttribute("viewBox", `0 0 ${contentW} ${contentH}`);
+  svg.style.width = (contentW * z) + "px";
+  svg.style.height = (contentH * z) + "px";
+}
+function render() {
+  computeVisible();
+  layout();
+  applySize();
+  gE.innerHTML = ""; gX.innerHTML = ""; gN.innerHTML = ""; gTop.innerHTML = ""; defs.innerHTML = "";
+
+  const markerTypes = [...new Set(crossE.map(e => e.type))];
+  markerTypes.forEach(t => {
+    const st = styleOf(t);
+    const m = svgEl("marker", { id: "arw-" + t.replace(/[^a-z0-9-]/gi, ""), viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" });
+    m.appendChild(svgEl("path", { d: "M 0 1 L 9 5 L 0 9 z", fill: st.color }));
+    defs.appendChild(m);
+  });
+
+  containsE.forEach(e => {
+    const pa = pos.get(e.from), pb = pos.get(e.to);
+    if (!pa || !pb || pa === pb) return;
+    const p = svgEl("path", { d: pathBetween(pa, pb), class: "edge", stroke: "#9ca3af", "stroke-width": 1.4 });
+    e._el = p;
+    gE.appendChild(p);
+  });
+
+  crossE.forEach(e => {
+    if (hiddenEdgeTypes.has(e.type)) { e._el = null; return; }
+    const pa = pos.get(e.from), pb = pos.get(e.to);
+    if (!pa || !pb || pa === pb) { e._el = null; return; }
+    const st = styleOf(e.type);
+    const sym = registry[e.type] && registry[e.type].direction === "symmetric";
+    const attrs = { d: pathBetween(pa, pb), class: "edge xedge", stroke: st.color, "stroke-width": 1.7 };
+    if (st.dash) attrs["stroke-dasharray"] = st.dash;
+    attrs["marker-end"] = `url(#arw-${e.type.replace(/[^a-z0-9-]/gi, "")})`;
+    if (sym) attrs["marker-start"] = `url(#arw-${e.type.replace(/[^a-z0-9-]/gi, "")})`;
+    const p = svgEl("path", attrs);
+    const tip = svgEl("title", {});
+    tip.textContent = `${e.type}: ${textOf(e.from)} -> ${textOf(e.to)}` +
+      (e.source && e.source.length ? `  (${e.source.join(", ")})` : "") +
+      (e.note ? `  note: ${e.note}` : "");
+    p.appendChild(tip);
+    e._el = p;
+    gX.appendChild(p);
+  });
+
+  const searching = searchQ.length > 0;
+  GRAPH.nodes.forEach(n => {
+    const r = pos.get(n.id);
+    if (!r) return;
+    const s = sizes.get(n.id);
+    const g = svgEl("g", { class: "node", transform: `translate(${r.x},${r.y})` });
+    const dark = DARKFILL[n.type];
+    g.appendChild(svgEl("rect", {
+      width: r.w, height: r.h, rx: 9,
+      fill: FILL[n.type] || "#e5e7eb", stroke: STROKE[n.type] || "#9ca3af"
+    }));
+    const head = svgEl("text", { x: HPAD, y: VPAD + 9, "font-size": 9.5, fill: dark ? "rgba(255,255,255,.75)" : "#6b7280" });
+    head.textContent = s.header;
+    g.appendChild(head);
+    s.lines.forEach((L, i) => {
+      const t = svgEl("text", { x: HPAD, y: VPAD + HEADER_H + i * LINE_H + 11, "font-size": 11.5, fill: dark ? "#f9fafb" : "#1f2937" });
+      t.textContent = L;
+      g.appendChild(t);
+    });
+    if ((children.get(n.id) || []).length) {
+      const kidsShown = (children.get(n.id) || []).some(c => vis.has(c));
+      const c = svgEl("circle", { cx: r.w - 10, cy: 10, r: 7.5, fill: "#fff", stroke: "#9ca3af", "stroke-width": 1 });
+      const sign = svgEl("path", {
+        d: kidsShown
+          ? `M ${r.w - 14} 10 H ${r.w - 6}`
+          : `M ${r.w - 14} 10 H ${r.w - 6} M ${r.w - 10} 6 V 14`,
+        stroke: "#374151", "stroke-width": 1.6, fill: "none"
+      });
+      const hit = svgEl("circle", { cx: r.w - 10, cy: 10, r: 11, fill: "transparent" });
+      hit.addEventListener("click", ev => {
+        ev.stopPropagation();
+        if (collapsed.has(n.id)) {
+          collapsed.delete(n.id);
+          opened.add(n.id);
+        } else {
+          collapsed.add(n.id);
+          opened.delete(n.id);
+        }
+        render();
+      });
+      g.appendChild(c); g.appendChild(sign); g.appendChild(hit);
+    }
+    if (hiddenNodeTypes.has(n.type)) g.classList.add("dim");
+    if (searching) {
+      if (n.text.toLowerCase().includes(searchQ) || n.id.includes(searchQ)) g.classList.add("match");
+      else g.classList.add("dim");
+    }
+    if (selected === n.id) g.classList.add("selected");
+    g.addEventListener("mouseenter", () => setEdgeFocus(n.id, true));
+    g.addEventListener("mouseleave", () => setEdgeFocus(n.id, false));
+    g.addEventListener("click", ev => {
+      ev.stopPropagation();
+      selected = n.id;
+      render();
+      buildPanel(n.id);
+    });
+    gN.appendChild(g);
+  });
+
+  if (selected) {
+    edgesFor(selected).forEach(({ e }) => {
+      if (e._el) {
+        gTop.appendChild(e._el);
+        e._el.classList.add("hl");
+      }
+    });
+  }
+}
+
+function fitView() {
+  if (!pos.size) return;
+  const wr = Math.max(wrap.clientWidth - 24, 200), hr = Math.max(wrap.clientHeight - 24, 200);
+  z = Math.min(Math.max(Math.min(wr / contentW, hr / contentH), 0.12), 1.6);
+  applySize();
+  wrap.scrollLeft = Math.max(0, (contentW * z - wrap.clientWidth) / 2);
+  wrap.scrollTop = Math.max(0, (contentH * z - wrap.clientHeight) / 2);
+}
+function centerOn(id) {
+  const r = pos.get(id);
+  if (!r) return;
+  wrap.scrollLeft = Math.max(0, (r.x + r.w / 2) * z - wrap.clientWidth / 2);
+  wrap.scrollTop = Math.max(0, (r.y + r.h / 2) * z - wrap.clientHeight / 2);
+}
+function ensureVisible(id) {
+  const r = pos.get(id);
+  if (!r) return;
+  const x0 = r.x * z, y0 = r.y * z;
+  const x1 = (r.x + r.w) * z, y1 = (r.y + r.h) * z;
+  if (x0 < wrap.scrollLeft + 40) wrap.scrollLeft = Math.max(0, x0 - 40);
+  else if (x1 > wrap.scrollLeft + wrap.clientWidth - 180) wrap.scrollLeft = x1 - wrap.clientWidth + 180;
+  if (y0 < wrap.scrollTop + 40) wrap.scrollTop = Math.max(0, y0 - 40);
+  else if (y1 > wrap.scrollTop + wrap.clientHeight - 60) wrap.scrollTop = y1 - wrap.clientHeight + 60;
+}
+function jump(id) {
+  if (!nodes.has(id)) return;
+  forceVisible.clear();
+  for (let p = parent.get(id); p !== undefined; p = parent.get(p)) {
+    collapsed.delete(p);
+    opened.add(p);
+  }
+  selected = id;
+  sideMode = false;
+  render();
+  centerOn(id);
+  buildPanel(id);
+}
+function select(id) {
+  if (!nodes.has(id)) return;
+  selected = id;
+  render();
+  ensureVisible(id);
+  buildPanel(id);
+}
+function closePanel() {
+  document.getElementById("panel").classList.remove("open");
+  wrap.classList.remove("shifted");
+  sideMode = false;
+}
+function panelItems() {
+  return [...document.getElementById("panel").querySelectorAll(".linkrow, .srcbtn")];
+}
+function buildPanel(id) {
+  const n = nodes.get(id);
+  const panel = document.getElementById("panel");
+  const out = crossE.filter(e => e.from === id);
+  const inc = crossE.filter(e => e.to === id);
+  const srcs = (n.source || []).map(r => {
+    const passage = (GRAPH.meta.passages || {})[r];
+    return `<button class="srcbtn" data-ref="${esc(r)}">${esc(r)}</button>` +
+      `<div class="passage" id="pass-${esc(r.slice(1))}">${passage != null ? esc(passage) : "(passage text not embedded)"}</div>`;
+  }).join("");
+  const edgeRow = (e, dir) =>
+    `<button class="linkrow" data-jump="${dir === "out" ? esc(e.to) : esc(e.from)}">` +
+    `<span class="etype">${esc(e.type)}</span> ${dir === "out" ? "&#8594;" : "&#8592;"} ${dir === "out" ? esc(e.to) : esc(e.from)}` +
+    ` ${textOf(dir === "out" ? e.to : e.from).slice(0, 60)}` +
+    (e.source && e.source.length ? ` <span class="note">${esc(e.source.join(", "))}</span>` : "") +
+    (e.note ? `<div class="note">${esc(e.note)}</div>` : "") + `</button>`;
+  const kids = (children.get(id) || []).map(k =>
+    `<button class="linkrow" data-jump="${esc(k)}">${esc(k)} ${esc(textOf(k).slice(0, 60))}</button>`).join("");
+  panel.innerHTML =
+    `<button class="close" id="pClose">&#215;</button>` +
+    `<h2>Node ${esc(id)}</h2>` +
+    `<div class="tagrow"><span class="tag">${esc(n.type)}</span>` +
+    (n.attribution && n.attribution !== "n/a" ? `<span class="tag">${esc(n.attribution)}</span>` : "") +
+    `</div><div class="text">${esc(n.text)}</div>` +
+    `<div class="sect">Where it comes from</div>${srcs}` +
+    (id !== "0" && parent.get(id) !== undefined ? `<div class="sect">Parent</div><button class="linkrow" data-jump="${esc(parent.get(id))}">${esc(parent.get(id))} ${esc(textOf(parent.get(id)).slice(0, 60))}</button>` : "") +
+    (kids ? `<div class="sect">Children</div>${kids}` : "") +
+    (out.length ? `<div class="sect">Links out</div>${out.map(e => edgeRow(e, "out")).join("")}` : "") +
+    (inc.length ? `<div class="sect">Links in</div>${inc.map(e => edgeRow(e, "in")).join("")}` : "");
+  panel.classList.add("open");
+  wrap.classList.add("shifted");
+  panel.querySelectorAll(".srcbtn").forEach(b => b.addEventListener("click", () => {
+    const t = document.getElementById("pass-" + b.dataset.ref.slice(1));
+    if (t) t.classList.toggle("show");
+  }));
+  panel.querySelectorAll("[data-jump]").forEach(b => b.addEventListener("click", () => jump(b.dataset.jump)));
+  document.getElementById("pClose").addEventListener("click", () => {
+    closePanel();
+    selected = null;
+    render();
+  });
+}
+function buildLegend() {
+  const lg = document.getElementById("legend");
+  const body = document.getElementById("legendBody");
+  const counts = {};
+  GRAPH.nodes.forEach(n => counts[n.type] = (counts[n.type] || 0) + 1);
+  const nodeChips = Object.keys(counts).sort().map(t =>
+    `<span class="chip" data-nt="${esc(t)}"><span class="swatch" style="background:${FILL[t] || "#e5e7eb"};border:1px solid ${STROKE[t] || "#9ca3af"}"></span>${esc(t)} ${counts[t]}</span>`).join("");
+  const etypes = [...new Set(crossE.map(e => e.type))].sort();
+  const edgeChips = etypes.map(t => {
+    const st = styleOf(t);
+    return `<span class="chip" data-et="${esc(t)}"><span class="lswatch" style="border-top-style:${st.dash === "7 4" ? "dashed" : st.dash === "2 4" ? "dotted" : "solid"};border-top-color:${st.color}"></span>${esc(t)}</span>`;
+  }).join("");
+  body.innerHTML = `<div class="lg-row">${nodeChips}</div><div class="lg-row">${edgeChips || ""}</div>`;
+  lg.querySelectorAll("[data-nt]").forEach(c => c.addEventListener("click", () => {
+    const t = c.dataset.nt;
+    if (hiddenNodeTypes.has(t)) hiddenNodeTypes.delete(t); else hiddenNodeTypes.add(t);
+    c.classList.toggle("off");
+    render();
+  }));
+  lg.querySelectorAll("[data-et]").forEach(c => c.addEventListener("click", () => {
+    const t = c.dataset.et;
+    if (hiddenEdgeTypes.has(t)) hiddenEdgeTypes.delete(t); else hiddenEdgeTypes.add(t);
+    c.classList.toggle("off");
+    render();
+  }));
+  const toggleCollapse = () => {
+    const off = lg.classList.toggle("collapsed");
+    document.getElementById("legendToggle").innerHTML = off ? "+" : "&#8722;";
+  };
+  document.getElementById("legendHead").addEventListener("click", toggleCollapse);
+  const help = document.getElementById("help");
+  const toggleHelp = () => {
+    const off = help.classList.toggle("collapsed");
+    document.getElementById("helpToggle").innerHTML = off ? "+" : "&#8722;";
+  };
+  document.getElementById("helpHead").addEventListener("click", toggleHelp);
+}
+function init() {
+  document.getElementById("title").textContent = (GRAPH.meta && GRAPH.meta.title) || "Point graph";
+  document.getElementById("srcname").textContent = (GRAPH.meta && GRAPH.meta.source) || "";
+  buildLegend();
+  selected = nodes.has("0") ? "0" : null;
+  render();
+  fitView();
+  if (selected) buildPanel(selected);
+
+  let drag = null;
+  let dragMoved = false;
+  svg.addEventListener("mousedown", ev => {
+    drag = { x: ev.clientX, y: ev.clientY, sl: wrap.scrollLeft, st: wrap.scrollTop };
+    dragMoved = false;
+    svg.classList.add("panning");
+  });
+  window.addEventListener("mousemove", ev => {
+    if (!drag) return;
+    const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) dragMoved = true;
+    if (dragMoved) {
+      wrap.scrollLeft = drag.sl - dx;
+      wrap.scrollTop = drag.st - dy;
+    }
+  });
+  window.addEventListener("mouseup", () => {
+    drag = null;
+    svg.classList.remove("panning");
+  });
+  svg.addEventListener("click", ev => {
+    if (ev.target === svg && !dragMoved) {
+      selected = null;
+      closePanel();
+      render();
+    }
+  });
+  svg.addEventListener("dblclick", () => fitView());
+
+  wrap.addEventListener("wheel", ev => {
+    if (ev.ctrlKey) {
+      ev.preventDefault();
+      const rect = wrap.getBoundingClientRect();
+      const mx = ev.clientX - rect.left;
+      const my = ev.clientY - rect.top;
+      const cx = mx + wrap.scrollLeft;
+      const cy = my + wrap.scrollTop;
+      const k = ev.deltaY > 0 ? 1 / 1.12 : 1.12;
+      const nz = Math.min(Math.max(z * k, 0.15), 4);
+      if (nz === z) return;
+      wrap.scrollLeft = cx * (nz / z) - mx;
+      wrap.scrollTop = cy * (nz / z) - my;
+      z = nz;
+      applySize();
+    }
+  }, { passive: false });
+
+  document.getElementById("btnAll").addEventListener("click", () => { showDepth = maxDepth; render(); });
+  document.getElementById("btnFit").addEventListener("click", fitView);
+  document.getElementById("btnReset").addEventListener("click", () => {
+    collapsed.clear(); opened.clear(); hiddenNodeTypes.clear(); hiddenEdgeTypes.clear();
+    forceVisible.clear(); searchQ = ""; selected = null; sideMode = false;
+    document.getElementById("searchBox").value = "";
+    document.getElementById("searchCount").textContent = "";
+    closePanel();
+    showDepth = Math.min(1, maxDepth);
+    document.querySelectorAll("#legend .chip").forEach(c => c.classList.remove("off"));
+    render();
+    fitView();
+  });
+  document.getElementById("searchBox").addEventListener("input", ev => {
+    searchQ = ev.target.value.trim().toLowerCase();
+    forceVisible = new Set();
+    let count = 0;
+    if (searchQ) {
+      nodes.forEach((n, id) => {
+        if (n.text.toLowerCase().includes(searchQ) || id.includes(searchQ)) {
+          count += 1;
+          forceVisible.add(id);
+          for (let p = parent.get(id); p !== undefined; p = parent.get(p)) forceVisible.add(p);
+        }
+      });
+    }
+    document.getElementById("searchCount").textContent = searchQ ? `${count} matches` : "";
+    render();
+  });
+
+  document.addEventListener("keydown", ev => {
+    if (ev.target && (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA")) return;
+    if (ev.ctrlKey && !ev.shiftKey && !ev.altKey && ev.key >= "0" && ev.key <= "9") {
+      ev.preventDefault();
+      showDepth = ev.key === "0" ? maxDepth : Math.min(+ev.key, maxDepth);
+      render();
+      return;
+    }
+    if (sideMode) {
+      const items = panelItems();
+      if (ev.key === "Escape") {
+        sideMode = false;
+        panelItems().forEach(el => el.classList.remove("kbd-focus"));
+        return;
+      }
+      if (!items.length) return;
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+        ev.preventDefault();
+        sideIdx = ev.key === "ArrowDown"
+          ? Math.min(sideIdx + 1, items.length - 1)
+          : Math.max(sideIdx - 1, 0);
+        items.forEach((el, i) => el.classList.toggle("kbd-focus", i === sideIdx));
+        items[sideIdx].scrollIntoView({ block: "nearest" });
+        return;
+      }
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        if (items[sideIdx]) items[sideIdx].click();
+        return;
+      }
+      return;
+    }
+    switch (ev.key) {
+      case "ArrowDown":
+      case "ArrowUp": {
+        ev.preventDefault();
+        if (!selected) { select("0"); break; }
+        const sameDepth = [...pos.keys()]
+          .filter(id => depthOf(id) === depthOf(selected))
+          .sort((a, b) => pos.get(a).y - pos.get(b).y || pos.get(a).x - pos.get(b).x);
+        const i = sameDepth.indexOf(selected);
+        const nxt = sameDepth[ev.key === "ArrowDown" ? i + 1 : i - 1];
+        if (nxt) select(nxt);
+        break;
+      }
+      case "ArrowLeft":
+        ev.preventDefault();
+        if (selected && parent.get(selected) !== undefined) select(parent.get(selected));
+        break;
+      case "ArrowRight": {
+        ev.preventDefault();
+        if (!selected) break;
+        const kids = children.get(selected) || [];
+        if (!kids.length) break;
+        collapsed.delete(selected);
+        opened.add(selected);
+        render();
+        select(kids[0]);
+        break;
+      }
+      case "Enter": {
+        ev.preventDefault();
+        if (!selected) select("0");
+        buildPanel(selected);
+        sideMode = true;
+        sideIdx = 0;
+        const items = panelItems();
+        items.forEach((el, i) => el.classList.toggle("kbd-focus", i === 0));
+        if (items[0]) items[0].scrollIntoView({ block: "nearest" });
+        break;
+      }
+      case "Escape":
+        if (selected) {
+          selected = null;
+          closePanel();
+          render();
+        }
+        break;
+    }
+  });
+}
+init();
+</script>
+</body>
+</html>
