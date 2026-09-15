@@ -5,7 +5,7 @@ Usage:
     python3 aggregate.py <skill-dir> <run-dir>
 
 Example:
-    python3 eval/lib/aggregate.py eval/skills/text-to-loglog eval/skills/text-to-loglog/runs/20260911_0000_v1
+    python3 eval/lib/aggregate.py eval/skills/point-hierarchy eval/skills/point-hierarchy/runs/20260911_0000_v1
 
 Reads each sample dir for judge_faithfulness.json, judge_coverage.json,
 judge_concision.json, judge_top.json and writes report.md plus summary.json

@@ -34,7 +34,7 @@ Pass gates: zero Critical errors, faithfulness precision at least 0.95, Must hav
 
 ## How the run was executed
 
-Run dir: `runs/20260911_1434_ph-v0.2.0`, created with `eval/run_eval.sh text-to-loglog ph-v0.2.0`.
+Run dir: `runs/20260911_1434_ph-v0.2.0`, created with `eval/run_eval.sh point-hierarchy ph-v0.2.0`.
 
 1. Skill execution: four parallel workers ran the `point-hierarchy` extraction passes (Survey, Skeleton, Trace, Assembly, Deduplication) on batches of samples. Each graph was validated with `scripts/graph.py validate` until zero errors and zero uncited passages, then rendered with `to-outline`. The outline was copied to `<sample>/output.log` and the graph to `<sample>/graph.json`. All 12 graphs validated clean on the first pass, with only minor fidelity repairs (restored dropped passages, fixed citations).
 2. Judging: four parallel workers ran Judges F, Cov, Con, then Top per sample, saving `judge_faithfulness.json`, `judge_coverage.json`, `judge_concision.json`, `judge_top.json` and appending full reasoning transcripts to `trace.md`.
@@ -103,7 +103,7 @@ Per sample movement, v0.2.0 to v0.3.0:
 To score a new skill version against the same corpus, create a fresh run and repeat the three steps. Keep prompts and gates pinned so versions are comparable.
 
 ```bash
-./eval/run_eval.sh text-to-loglog <label>
-python3 eval/lib/aggregate.py eval/skills/text-to-loglog eval/skills/text-to-loglog/runs/<stamp>_<label>
-python3 eval/lib/check.py eval/skills/text-to-loglog eval/skills/text-to-loglog/runs/<stamp>_<label>
+./eval/run_eval.sh point-hierarchy <label>
+python3 eval/lib/aggregate.py eval/skills/point-hierarchy eval/skills/point-hierarchy/runs/<stamp>_<label>
+python3 eval/lib/check.py eval/skills/point-hierarchy eval/skills/point-hierarchy/runs/<stamp>_<label>
 ```

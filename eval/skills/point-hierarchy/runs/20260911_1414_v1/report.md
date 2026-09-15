@@ -1,7 +1,7 @@
 # Eval report
 
-Skill dir: eval/skills/text-to-loglog
-Run dir: eval/skills/text-to-loglog/runs/20260911_1414_v1
+Skill dir: eval/skills/point-hierarchy
+Run dir: eval/skills/point-hierarchy/runs/20260911_1414_v1
 
 ## Summary
 

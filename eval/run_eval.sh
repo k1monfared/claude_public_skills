@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Create a new timestamped eval run skeleton for any skill.
 # Usage: ./run_eval.sh <skill-name> [skill-version-label]
-# Example: ./run_eval.sh text-to-loglog v1
+# Example: ./run_eval.sh point-hierarchy v1
 set -euo pipefail
 
 SKILL_NAME="${1:?usage: run_eval.sh <skill-name> [version-label]}"

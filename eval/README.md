@@ -12,7 +12,7 @@ eval/
     aggregate.py
     check.py
   skills/
-    text-to-loglog/
+    point-hierarchy/
       config.json
       corpus.json
       prompts/
@@ -38,7 +38,7 @@ eval/
 
 ## Add a new skill eval
 
-1. Copy `skills/text-to-loglog` to `skills/<new-skill>` as a layout reference.
+1. Copy `skills/point-hierarchy` to `skills/<new-skill>` as a layout reference.
 2. Replace `corpus.json`, `corpus/sources`, `config.json`, and files in `prompts`.
 3. Keep the same per sample file names so `aggregate.py` and `check.py` work unchanged.
 4. Create a run with `./run_eval.sh <new-skill> v1`.
@@ -46,12 +46,12 @@ eval/
 ## Run workflow
 
 ```bash
-./eval/run_eval.sh text-to-loglog v1
+./eval/run_eval.sh point-hierarchy v1
 # fill output.log per sample with the skill under test
 # run the 4 judge prompts, save JSON outputs per sample
 # append full judge transcripts to trace.md per sample
-python3 eval/lib/aggregate.py eval/skills/text-to-loglog eval/skills/text-to-loglog/runs/<stamp>_v1
-python3 eval/lib/check.py eval/skills/text-to-loglog eval/skills/text-to-loglog/runs/<stamp>_v1
+python3 eval/lib/aggregate.py eval/skills/point-hierarchy eval/skills/point-hierarchy/runs/<stamp>_v1
+python3 eval/lib/check.py eval/skills/point-hierarchy eval/skills/point-hierarchy/runs/<stamp>_v1
 ```
 
 ## Audit rule
