@@ -11,6 +11,10 @@ eval/
   lib/
     aggregate.py
     check.py
+    compare.py
+    failures.py
+    judge_run.py
+    precheck.py
   skills/
     digestif/
       config.json
@@ -26,6 +30,8 @@ eval/
         RUNLOG.md
         report.md
         summary.json
+        failures.md
+        failures.json
         <sample-id>/
           source.txt
           output.log
@@ -51,7 +57,10 @@ eval/
 # then run the judges either scripted (below) or manually with the 4 prompt files
 python3 eval/lib/aggregate.py eval/skills/digestif eval/skills/digestif/runs/<stamp>_v1
 python3 eval/lib/check.py eval/skills/digestif eval/skills/digestif/runs/<stamp>_v1
+python3 eval/lib/failures.py eval/skills/digestif/runs/<stamp>_v1
 ```
+
+`failures.py` writes the consolidated audit report for the run: `failures.md` for humans and `failures.json` for tooling. It lists every non-supported claim, every non-present key point, every concision flag, and the top judge fix lists, each with its ids, evidence, and reasoning, so a reviewer can audit or overturn any verdict.
 
 ## Scripted judge pipeline
 
