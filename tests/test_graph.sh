@@ -91,7 +91,7 @@ assert_exit_code "two contains parents rejected" 1 python3 "$GRAPH" validate "$T
 mutate "$TMP/bad_root.json" 'g["nodes"][0]["type"] = "claim"'
 assert_exit_code "non-summary root rejected" 1 python3 "$GRAPH" validate "$TMP/bad_root.json"
 
-mutate "$TMP/uncited.json" 'g["meta"]["passages"]["¶6"] = "A sentence nobody cites."'
+mutate "$TMP/uncited.json" 'g["meta"]["passages"]["¶6"] = "A sentence nobody cites."; g["meta"].pop("spans", None); g["meta"].pop("sourceText", None)'
 out="$(python3 "$GRAPH" validate "$TMP/uncited.json" 2>&1)"
 code=$?
 assert_eq "uncited passage is a warning, not an error" "0" "$code"
@@ -147,6 +147,35 @@ grep -q "__GRAPH_JSON__" "$TMP/out.html" \
     && { TESTS_RUN=$((TESTS_RUN + 1)); FAIL=$((FAIL + 1)); echo "  FAIL: placeholder replaced"; } \
     || { TESTS_RUN=$((TESTS_RUN + 1)); PASS=$((PASS + 1)); echo "  PASS: placeholder replaced"; }
 assert_exit_code "refuses invalid graph" 1 python3 "$GRAPH" to-html "$TMP/bad_endpoint.json" -o "$TMP/bad.html"
+
+echo "=== locate and spans ==="
+cp "$EXAMPLE" "$TMP/tolocate.json"
+assert_exit_code "locate fills spans" 0 python3 "$GRAPH" locate "$TMP/tolocate.json" "$PROJECT_DIR/skills/point-hierarchy/examples/car-ban.txt" -i
+out="$(python3 "$GRAPH" validate "$TMP/tolocate.json" 2>&1)"
+assert_contains "graph with spans validates" "OK: graph is valid" "$out"
+out="$(python3 -c "
+import json
+g = json.load(open('$TMP/tolocate.json'))
+m = g['meta']
+print('span slice matches passage:', m['sourceText'][m['spans']['¶2'][0]:m['spans']['¶2'][1]] == m['passages']['¶2'])
+")"
+assert_contains "span slice equals passage text" "True" "$out"
+python3 -c "
+import json
+g = json.load(open('$TMP/tolocate.json'))
+g['meta']['passages']['¶2'] = 'Totally different text.'
+json.dump(g, open('$TMP/tampered.json', 'w'), ensure_ascii=False)
+"
+assert_exit_code "span and passage mismatch rejected" 1 python3 "$GRAPH" validate "$TMP/tampered.json"
+assert_exit_code "locate rejects a passage absent from source" 1 python3 "$GRAPH" locate "$TMP/tampered.json" "$PROJECT_DIR/skills/point-hierarchy/examples/car-ban.txt" -i
+out="$(python3 "$GRAPH" validate "$EXAMPLE" 2>&1)"
+assert_contains "shipped example has spans" "0 warning(s)" "$out"
+out="$(python3 -c "
+import json
+g = json.load(open('$EXAMPLE'))
+print('shipped example span count:', len(g['meta'].get('spans', {})))
+")"
+assert_contains "shipped example span count" "5" "$out"
 
 echo "=== render ==="
 assert_exit_code "render generates both outputs" 0 python3 "$GRAPH" render "$EXAMPLE" -o "$TMP/render"

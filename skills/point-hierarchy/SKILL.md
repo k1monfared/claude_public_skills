@@ -31,6 +31,7 @@ All commands run from the skill directory:
 python3 scripts/graph.py validate name.graph.json    # integrity + citation check, exit 1 on error
 python3 scripts/graph.py stats name.graph.json       # coverage, tree-ness, hubs, cycles
 python3 scripts/graph.py renumber name.graph.json -i # canonicalize node ids after restructuring
+python3 scripts/graph.py locate name.graph.json source.txt -i # add sourceText and passage offsets
 python3 scripts/graph.py render name.graph.json      # outline.log and graph.html in one step
 python3 scripts/graph.py to-outline name.graph.json -o name.outline.log
 python3 scripts/graph.py to-html name.graph.json -o name.graph.html
@@ -45,7 +46,9 @@ Any graph that passes `validate` renders, whatever its size, depth, or shape: hu
   "meta": {
     "title": "short title",
     "source": "original file name",
-    "passages": { "¶1": "exact text of first passage", "¶2": "..." }
+    "sourceText": "full text of the source, added by locate",
+    "passages": { "¶1": "exact text of first passage", "¶2": "..." },
+    "spans": { "¶1": [0, 42], "¶2": [43, 152] }
   },
   "nodes": [
     { "id": "0", "type": "summary", "text": "one-sentence summary",
@@ -60,6 +63,7 @@ Any graph that passes `validate` renders, whatever its size, depth, or shape: hu
 ```
 
 - **passages**: before extraction, split the source into passages: paragraphs, or sentence clusters for dense text. Store the exact text of each passage under `¶1`, `¶2`, ... This is the anti-hallucination anchor: every claim in the graph is checked against these strings, and the viewer shows them on click.
+- **spans and sourceText**: citations are tracked two ways. The copied passage text is the anchor, and the character offsets into the full source are the location. Never hand-write these: after the passages are in place, run `locate`, which finds each passage verbatim in the source file and fills `meta.sourceText` and `meta.spans` mechanically. `validate` then enforces the pair: `sourceText[start:end]` must equal the copied passage exactly, so the two representations cannot drift apart. The viewer uses the spans to show the full source with the cited sentences highlighted.
 - **ids**: positional paths. Root is `"0"`, its children `"1"`, `"2"`, ..., their children `"1.1"`, `"1.2"`, ... The `contains` edges must mirror the id structure exactly. After restructuring, run `renumber` instead of renumbering by hand.
 - **node types**: summary, theme, claim, evidence, example, counterpoint, rebuttal, nuance, concession, contradiction, implicit.
 - **attribution**: author, reported, counter, conceded, n/a. Never promote a position out of context: a sentence like "the author says critics claim P, but P is false" must yield a counterpoint node with attribution `counter`, never a claim that P.
@@ -82,7 +86,7 @@ Read the text from the beginning in every pass. Each pass has one job.
 
 ### Pass 0: Survey
 
-Read the whole text without annotating. Record genre, length, who is speaking, whether it holds one argument or several. Split it into passages and write the exact passage texts into `meta.passages`. For texts over roughly 5000 words, decide chunk boundaries now.
+Read the whole text without annotating. Record genre, length, who is speaking, whether it holds one argument or several. Split it into passages and write the exact passage texts into `meta.passages`. Then run `locate` against the source file to add `meta.sourceText` and `meta.spans`; if it reports a passage not found verbatim, fix the passage copy, never the source. For texts over roughly 5000 words, decide chunk boundaries now.
 
 ### Pass 1: Skeleton
 
@@ -118,7 +122,7 @@ After the loop settles, three checks in order. Fix failures and re-run the faile
     - Scope words and limiting adjectives: every, most, some, major, minor, credible, relevant, and their kin match the source scope.
     - Attribution: the node carries the right attribution and no counterpoint is promoted to a claim.
     - No overclaim: the node asserts nothing beyond its source. A node asserting more than its source must be narrowed or split, then re-run Fidelity for it.
-3. **Render**: run `to-outline` and `to-html`, read the outline once as a reader. If a layer reads wrong, the graph is wrong: fix the graph, never the outline. While reading, also check that no branch restates an earlier branch without adding information: a restated branch means a missed `restates` edge or a duplicate node from Pass 4. Apply the same test between a header node and its children: a header that repeats a child's content without adding a level of abstraction is duplication, so abstract the header or fold it away.
+3. **Render**: run `render` (or `to-outline` and `to-html`), read the outline once as a reader. In the viewer, the sidebar has a Source toggle that switches between the cited excerpts and the full source text, with the selected node's sentences tinted in its type color and related nodes' sentences in their relation colors; clicking a highlighted sentence jumps to a node that cites it. The sidebar's left edge drags to resize it without moving the graph. If a layer reads wrong, the graph is wrong: fix the graph, never the outline. While reading, also check that no branch restates an earlier branch without adding information: a restated branch means a missed `restates` edge or a duplicate node from Pass 4. Apply the same test between a header node and its children: a header that repeats a child's content without adding a level of abstraction is duplication, so abstract the header or fold it away.
 
 Failure routing:
 

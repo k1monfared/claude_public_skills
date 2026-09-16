@@ -9,6 +9,7 @@ Subcommands:
   validate    check structural and citation integrity, exit 1 on errors
   stats       coverage, tree-ness, hubs, cycles
   renumber    rewrite node ids so they follow tree position exactly
+  locate      add the full source text and passage character offsets
   render      generate outline.log and graph.html together
   to-outline  generate a loglog outline from the graph
   to-html     generate the interactive viewer from the graph
@@ -220,6 +221,39 @@ def validate(g):
                 errors.append(f"node {nid}: no contains edge from parent '{p}'")
             elif contains_into.get(nid, 0) > 1:
                 errors.append(f"node {nid}: has multiple contains parents")
+
+    spans = meta.get("spans")
+    source_text = meta.get("sourceText")
+    if spans is not None:
+        if not isinstance(spans, dict):
+            errors.append("meta.spans must be an object mapping ¶n to [start, end]")
+        elif not isinstance(source_text, str) or not source_text:
+            errors.append("meta.spans is present but meta.sourceText is missing, run locate to fill both")
+        else:
+            prev_end = -1
+            for pref in sorted(passages, key=passage_key):
+                if pref not in spans:
+                    errors.append(f"meta.spans is missing an entry for {pref}")
+                    continue
+                span = spans[pref]
+                if (not isinstance(span, list) or len(span) != 2
+                        or not all(isinstance(x, int) for x in span)):
+                    errors.append(f"meta.spans[{pref}] must be [start, end] integers")
+                    continue
+                s, e = span
+                if s < 0 or e < s or e > len(source_text):
+                    errors.append(f"meta.spans[{pref}] out of range: [{s}, {e}] for {len(source_text)} chars")
+                    continue
+                if source_text[s:e] != passages[pref]:
+                    errors.append(f"meta.spans[{pref}] does not match meta.passages[{pref}]: source text at [{s}, {e}] differs from the copied passage")
+                if s < prev_end:
+                    warns.append(f"meta.spans[{pref}] starts before the previous passage ends, spans overlap or are out of order")
+                prev_end = e
+            extra = [k for k in spans if k not in passages]
+            if extra:
+                errors.append(f"meta.spans has entries with no passage: {', '.join(extra)}")
+    elif isinstance(source_text, str) and source_text:
+        warns.append("meta.sourceText is present without meta.spans, run locate to add offsets")
 
     cited = set()
     for n in nodes_list:
@@ -466,6 +500,43 @@ def to_outline_text(g):
     return "\n".join(lines) + "\n"
 
 
+def cmd_locate(args):
+    g = load_graph(args.graph)
+    try:
+        text = Path(args.source).read_text(encoding="utf-8")
+    except OSError as exc:
+        print(f"error: cannot read source {args.source}: {exc}", file=sys.stderr)
+        return 1
+    passages = (g.get("meta") or {}).get("passages") or {}
+    if not passages:
+        print("error: meta.passages is empty, nothing to locate", file=sys.stderr)
+        return 1
+    spans = {}
+    cursor = 0
+    for pref in sorted(passages, key=passage_key):
+        ptext = str(passages[pref])
+        pos = text.find(ptext, cursor)
+        if pos == -1:
+            before = text.find(ptext)
+            if before == -1:
+                print(f"error: passage {pref} not found verbatim in {args.source}", file=sys.stderr)
+            else:
+                print(f"error: passage {pref} found before an earlier passage, passages are out of order", file=sys.stderr)
+            return 1
+        spans[pref] = [pos, pos + len(ptext)]
+        cursor = pos + len(ptext)
+    meta = g.setdefault("meta", {})
+    meta["sourceText"] = text
+    meta["spans"] = spans
+    out = json.dumps(g, ensure_ascii=False, indent=2) + "\n"
+    if args.in_place:
+        Path(args.graph).write_text(out, encoding="utf-8")
+        print(f"located {len(spans)} passages in {len(text)} chars, wrote {args.graph}")
+    else:
+        sys.stdout.write(out)
+    return 0
+
+
 def cmd_to_outline(args):
     g = load_graph(args.graph)
     text = to_outline_text(g)
@@ -555,6 +626,12 @@ def main(argv=None):
     r.add_argument("-f", "--force", action="store_true")
     r.add_argument("-v", "--verbose", action="store_true")
     r.set_defaults(func=cmd_renumber)
+
+    lo = sub.add_parser("locate", help="add sourceText and passage character offsets from the source file")
+    lo.add_argument("graph")
+    lo.add_argument("source")
+    lo.add_argument("-i", "--in-place", action="store_true")
+    lo.set_defaults(func=cmd_locate)
 
     o = sub.add_parser("to-outline", help="generate loglog outline")
     o.add_argument("graph")

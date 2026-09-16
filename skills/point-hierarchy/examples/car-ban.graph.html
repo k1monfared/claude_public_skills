@@ -34,7 +34,6 @@
   #canvasWrap { position: absolute; left: 0; right: 0; top: 52px; bottom: 0; overflow: auto; cursor: grab; }
   #canvasWrap.panning { cursor: grabbing; }
   #world { padding: 110vh 110vw; width: max-content; }
-  #canvasWrap.shifted { right: 354px; }
   #canvasWrap::-webkit-scrollbar { width: 10px; height: 10px; }
   #canvasWrap::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 5px; }
   svg { display: block; cursor: grab; }
@@ -84,7 +83,20 @@
   #panel .note { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   #panel .srcbtn { display: inline-block; font: inherit; font-size: 12px; padding: 3px 8px; margin: 2px 4px 2px 0; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; }
   #panel .passage { display: none; font-size: 12.5px; line-height: 1.5; background: #f7f7f4; border: 1px solid var(--line); border-radius: 7px; padding: 8px; margin: 4px 0; }
-  #panel .passage.show { display: block; }
+  #panel .passage.show { display: block; cursor: pointer; }
+  #panelHead { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  #panelHead h2 { flex: 1; margin: 0; }
+  #pMode { font-size: 11px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  #pMode:hover { border-color: var(--accent); }
+  #pMode.on { background: #eef2ff; border-color: var(--accent); color: var(--accent); }
+  #sourceBody { font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+  #sourceBody mark { background: transparent; border-radius: 2px; cursor: pointer; padding: 0 1px; }
+  #panelHandle {
+    position: fixed; top: 52px; bottom: 12px; width: 9px; right: 0; z-index: 26;
+    cursor: col-resize; display: none; border-radius: 5px;
+  }
+  #panelHandle.open { display: block; }
+  #panelHandle:hover, #panelHandle.dragging { background: rgba(37, 99, 235, .25); }
   .node rect { stroke-width: 1.2; }
   .node { cursor: pointer; }
   .node.dim { opacity: .12; pointer-events: none; }
@@ -130,6 +142,8 @@
       <span class="k">ctrl+1..9</span><span>show that many layers</span>
       <span class="k">ctrl+0</span><span>unfold everything</span>
       <span class="k">ctrl+alt+1..9</span><span>focus the selected branch</span>
+      <span class="k">source</span><span>sidebar toggle between excerpts and the full source</span>
+      <span class="k">drag edge</span><span>resize the sidebar</span>
       <span class="k">click</span><span>select a node</span>
     </div>
     <div id="legend">
@@ -139,8 +153,9 @@
   </div>
 </div>
 <div id="panel"></div>
+<div id="panelHandle" title="drag to resize the sidebar"></div>
 <script>
-const GRAPH = {"meta": {"title": "Car ban paragraph, point graph", "source": "car-ban.txt", "passages": {"¶1": "Cities should ban cars from their centers.", "¶2": "Some argue this hurts businesses, but studies of Madrid and Oslo show retail revenue rose after restrictions.", "¶3": "Of course, buses and delivery vehicles must be exempt, otherwise goods do not reach shops.", "¶4": "Critics also say such bans only work in wealthy cities. That may be true today, yet the same was said of bike lanes, which now succeed in Bogota and Jakarta.", "¶5": "Public transit must expand first, though. A ban without transit is just displacement."}, "edgeTypes": {"supports": {"direction": "directed", "inverse": "supported-by", "style": "solid green"}, "exemplifies": {"direction": "directed", "inverse": "exemplified-by", "style": "dotted green"}, "contradicts": {"direction": "symmetric", "inverse": "contradicts", "style": "solid red"}, "qualifies": {"direction": "directed", "inverse": "qualified-by", "style": "dashed blue"}, "concedes": {"direction": "directed", "inverse": "conceded-by", "style": "dashed gray"}, "restates": {"direction": "symmetric", "inverse": "restates", "style": "dotted gray"}, "precondition": {"direction": "directed", "inverse": "prerequisite-of", "style": "solid orange"}, "contains": {"direction": "directed", "inverse": "contained-in", "style": "tree"}}}, "nodes": [{"id": "0", "type": "summary", "text": "Cities should ban car traffic from centers, but only after transit expands, since business-harm and elitism objections fail.", "attribution": "author", "source": ["¶1", "¶5"]}, {"id": "1", "type": "claim", "text": "Cities should ban cars from their centers.", "attribution": "author", "source": ["¶1"]}, {"id": "1.1", "type": "counterpoint", "text": "Car bans hurt businesses.", "attribution": "counter", "source": ["¶2"]}, {"id": "1.1.1", "type": "rebuttal", "text": "Retail revenue rose in Madrid and Oslo after restrictions.", "attribution": "author", "source": ["¶2"]}, {"id": "1.2", "type": "nuance", "text": "Buses and delivery vehicles must be exempt or goods cannot reach shops.", "attribution": "author", "source": ["¶3"]}, {"id": "2", "type": "counterpoint", "text": "Car bans only work in wealthy cities.", "attribution": "counter", "source": ["¶4"]}, {"id": "2.1", "type": "concession", "text": "This may be true today.", "attribution": "conceded", "source": ["¶4"]}, {"id": "2.2", "type": "rebuttal", "text": "The same objection was raised against bike lanes, now successful in Bogota and Jakarta.", "attribution": "author", "source": ["¶4"]}, {"id": "3", "type": "claim", "text": "Public transit must expand before any ban takes effect.", "attribution": "author", "source": ["¶5"]}, {"id": "3.1", "type": "nuance", "text": "A ban without transit is displacement, not improvement.", "attribution": "author", "source": ["¶5"]}], "edges": [{"from": "0", "to": "1", "type": "contains"}, {"from": "0", "to": "2", "type": "contains"}, {"from": "0", "to": "3", "type": "contains"}, {"from": "1", "to": "1.1", "type": "contains"}, {"from": "1.1", "to": "1.1.1", "type": "contains"}, {"from": "1", "to": "1.2", "type": "contains"}, {"from": "2", "to": "2.1", "type": "contains"}, {"from": "2", "to": "2.2", "type": "contains"}, {"from": "3", "to": "3.1", "type": "contains"}, {"from": "1.1.1", "to": "1.1", "type": "supports", "source": ["¶2"], "note": "study evidence rebuts the business-harm objection"}, {"from": "2.2", "to": "1", "type": "supports", "source": ["¶4"], "note": "historical analogy supports the main claim"}, {"from": "3", "to": "1", "type": "qualifies", "source": ["¶5"], "note": "scope limit: the ban is advocated conditionally"}]};
+const GRAPH = {"meta": {"title": "Car ban paragraph, point graph", "source": "car-ban.txt", "passages": {"¶1": "Cities should ban cars from their centers.", "¶2": "Some argue this hurts businesses, but studies of Madrid and Oslo show retail revenue rose after restrictions.", "¶3": "Of course, buses and delivery vehicles must be exempt, otherwise goods do not reach shops.", "¶4": "Critics also say such bans only work in wealthy cities. That may be true today, yet the same was said of bike lanes, which now succeed in Bogota and Jakarta.", "¶5": "Public transit must expand first, though. A ban without transit is just displacement."}, "sourceText": "Cities should ban cars from their centers. Some argue this hurts businesses, but studies of Madrid and Oslo show retail revenue rose after restrictions. Of course, buses and delivery vehicles must be exempt, otherwise goods do not reach shops. Critics also say such bans only work in wealthy cities. That may be true today, yet the same was said of bike lanes, which now succeed in Bogota and Jakarta. Public transit must expand first, though. A ban without transit is just displacement.\n", "spans": {"¶1": [0, 42], "¶2": [43, 152], "¶3": [153, 243], "¶4": [244, 401], "¶5": [402, 487]}, "edgeTypes": {"supports": {"direction": "directed", "inverse": "supported-by", "style": "solid green"}, "exemplifies": {"direction": "directed", "inverse": "exemplified-by", "style": "dotted green"}, "contradicts": {"direction": "symmetric", "inverse": "contradicts", "style": "solid red"}, "qualifies": {"direction": "directed", "inverse": "qualified-by", "style": "dashed blue"}, "concedes": {"direction": "directed", "inverse": "conceded-by", "style": "dashed gray"}, "restates": {"direction": "symmetric", "inverse": "restates", "style": "dotted gray"}, "precondition": {"direction": "directed", "inverse": "prerequisite-of", "style": "solid orange"}, "contains": {"direction": "directed", "inverse": "contained-in", "style": "tree"}}}, "nodes": [{"id": "0", "type": "summary", "text": "Cities should ban car traffic from centers, but only after transit expands, since business-harm and elitism objections fail.", "attribution": "author", "source": ["¶1", "¶5"]}, {"id": "1", "type": "claim", "text": "Cities should ban cars from their centers.", "attribution": "author", "source": ["¶1"]}, {"id": "1.1", "type": "counterpoint", "text": "Car bans hurt businesses.", "attribution": "counter", "source": ["¶2"]}, {"id": "1.1.1", "type": "rebuttal", "text": "Retail revenue rose in Madrid and Oslo after restrictions.", "attribution": "author", "source": ["¶2"]}, {"id": "1.2", "type": "nuance", "text": "Buses and delivery vehicles must be exempt or goods cannot reach shops.", "attribution": "author", "source": ["¶3"]}, {"id": "2", "type": "counterpoint", "text": "Car bans only work in wealthy cities.", "attribution": "counter", "source": ["¶4"]}, {"id": "2.1", "type": "concession", "text": "This may be true today.", "attribution": "conceded", "source": ["¶4"]}, {"id": "2.2", "type": "rebuttal", "text": "The same objection was raised against bike lanes, now successful in Bogota and Jakarta.", "attribution": "author", "source": ["¶4"]}, {"id": "3", "type": "claim", "text": "Public transit must expand before any ban takes effect.", "attribution": "author", "source": ["¶5"]}, {"id": "3.1", "type": "nuance", "text": "A ban without transit is displacement, not improvement.", "attribution": "author", "source": ["¶5"]}], "edges": [{"from": "0", "to": "1", "type": "contains"}, {"from": "0", "to": "2", "type": "contains"}, {"from": "0", "to": "3", "type": "contains"}, {"from": "1", "to": "1.1", "type": "contains"}, {"from": "1.1", "to": "1.1.1", "type": "contains"}, {"from": "1", "to": "1.2", "type": "contains"}, {"from": "2", "to": "2.1", "type": "contains"}, {"from": "2", "to": "2.2", "type": "contains"}, {"from": "3", "to": "3.1", "type": "contains"}, {"from": "1.1.1", "to": "1.1", "type": "supports", "source": ["¶2"], "note": "study evidence rebuts the business-harm objection"}, {"from": "2.2", "to": "1", "type": "supports", "source": ["¶4"], "note": "historical analogy supports the main claim"}, {"from": "3", "to": "1", "type": "qualifies", "source": ["¶5"], "note": "scope limit: the ban is advocated conditionally"}]};
 
 const COL_GAP = 56, ROW_GAP = 14, PAD = 50, BODY_W = 240, LINE_H = 14, HEADER_H = 12, VPAD = 7, HPAD = 9;
 const FONT_STACK = "system-ui, -apple-system, 'Segoe UI', sans-serif";
@@ -467,6 +482,7 @@ function render() {
     });
   }
   updateCulling();
+  updateSourceHighlights(false);
 }
 function updateCulling() {
   if (!pos.size) return;
@@ -646,11 +662,107 @@ function focusToLayer(level) {
 }
 function closePanel() {
   document.getElementById("panel").classList.remove("open");
-  wrap.classList.remove("shifted");
+  document.getElementById("panelHandle").classList.remove("open");
+  wrap.style.right = "0px";
+  updateCulling();
   sideMode = false;
+}
+let panelW = 330;
+let panelMode = "excerpts";
+let sourceBodyEl = null;
+function applyPanelWidth() {
+  const max = Math.max(260, Math.round(window.innerWidth * 0.75));
+  panelW = Math.min(Math.max(panelW, 260), max);
+  document.getElementById("panel").style.width = panelW + "px";
+  document.getElementById("panelHandle").style.right = (panelW + 10) + "px";
+  wrap.style.right = (panelW + 24) + "px";
+  updateCulling();
 }
 function panelItems() {
   return [...document.getElementById("panel").querySelectorAll(".linkrow, .srcbtn")];
+}
+const citing = new Map();
+GRAPH.nodes.forEach(n => (n.source || []).forEach(r => {
+  if (!citing.has(r)) citing.set(r, []);
+  citing.get(r).push(n.id);
+}));
+function refMarkId(ref) {
+  return "src-" + String(ref).replace(/[^0-9]/g, "");
+}
+function buildSourceBody() {
+  const text = (GRAPH.meta && GRAPH.meta.sourceText) || "";
+  const spans = (GRAPH.meta && GRAPH.meta.spans) || {};
+  const body = document.createElement("div");
+  body.id = "sourceBody";
+  if (!text) return body;
+  const key = r => { const m = String(r).match(/\d+/); return m ? +m[0] : 0; };
+  const refs = Object.keys(spans).sort((a, b) => key(a) - key(b));
+  let cursor = 0;
+  refs.forEach(ref => {
+    const span = spans[ref];
+    if (!Array.isArray(span) || span.length !== 2) return;
+    const s = span[0], e = span[1];
+    if (s > cursor) body.appendChild(document.createTextNode(text.slice(cursor, s)));
+    const m = document.createElement("mark");
+    m.id = refMarkId(ref);
+    m.dataset.ref = ref;
+    m.textContent = text.slice(s, e);
+    m.title = ref + (citing.has(ref) ? " - cited by " + citing.get(ref).join(", ") : "");
+    m.addEventListener("click", () => {
+      const ids = citing.get(ref) || [];
+      if (ids.length) select(ids[0]);
+    });
+    body.appendChild(m);
+    cursor = e;
+  });
+  if (cursor < text.length) body.appendChild(document.createTextNode(text.slice(cursor)));
+  return body;
+}
+function paintMark(ref, bg, title) {
+  const m = document.getElementById(refMarkId(ref));
+  if (!m) return;
+  m.style.background = bg;
+  if (title) m.title = title;
+}
+const HL_BG = { summary: "#e5e7eb", theme: "#e0e7ff" };
+function paintSelectedRefs(id) {
+  const node = nodes.get(id);
+  if (!node) return;
+  const bg = HL_BG[node.type] || FILL[node.type] || "#e5e7eb";
+  (node.source || []).forEach(r => paintMark(r, bg, r + " - " + node.type + " " + id));
+}
+function paintRelatedRefs(id) {
+  const seen = new Set((nodes.get(id) || {}).source || []);
+  crossE.forEach(e => {
+    if (e.from !== id && e.to !== id) return;
+    const other = e.from === id ? e.to : e.from;
+    const on = nodes.get(other);
+    if (!on) return;
+    const col = styleOf(e.type).color;
+    (on.source || []).forEach(r => {
+      if (seen.has(r)) return;
+      seen.add(r);
+      paintMark(r, col + "22", r + " - " + other + " " + e.type + " " + id);
+    });
+  });
+}
+function updateSourceHighlights(scroll) {
+  document.querySelectorAll("#sourceBody mark").forEach(m => {
+    m.style.background = "transparent";
+    m.title = m.dataset.ref + (citing.has(m.dataset.ref) ? " - cited by " + citing.get(m.dataset.ref).join(", ") : "");
+  });
+  if (!selected || !nodes.has(selected)) return;
+  paintRelatedRefs(selected);
+  paintSelectedRefs(selected);
+  if (scroll) {
+    const node = nodes.get(selected);
+    const first = (node.source || []).map(refMarkId).map(mid => document.getElementById(mid)).find(Boolean);
+    if (first) first.scrollIntoView({ block: "nearest" });
+  }
+}
+function scrollToRef(ref) {
+  const m = document.getElementById(refMarkId(ref));
+  if (m) m.scrollIntoView({ block: "center" });
 }
 function buildPanel(id) {
   const n = nodes.get(id);
@@ -660,32 +772,47 @@ function buildPanel(id) {
   const srcs = (n.source || []).map(r => {
     const passage = (GRAPH.meta.passages || {})[r];
     return `<button class="srcbtn" data-ref="${esc(r)}">${esc(r)}</button>` +
-      `<div class="passage" id="pass-${esc(r.slice(1))}">${passage != null ? esc(passage) : "(passage text not embedded)"}</div>`;
+      `<div class="passage show" id="pass-${esc(r.slice(1))}">${passage != null ? esc(passage) : "(passage text not embedded)"}</div>`;
   }).join("");
-  const edgeRow = (e, dir) =>
-    `<button class="linkrow" data-jump="${dir === "out" ? esc(e.to) : esc(e.from)}">` +
-    `<span class="etype">${esc(e.type)}</span> ${dir === "out" ? "&#8594;" : "&#8592;"} ${dir === "out" ? esc(e.to) : esc(e.from)}` +
-    ` ${textOf(dir === "out" ? e.to : e.from).slice(0, 60)}` +
-    (e.source && e.source.length ? ` <span class="note">${esc(e.source.join(", "))}</span>` : "") +
-    (e.note ? `<div class="note">${esc(e.note)}</div>` : "") + `</button>`;
-  const kids = (children.get(id) || []).map(k =>
-    `<button class="linkrow" data-jump="${esc(k)}">${esc(k)} ${esc(textOf(k).slice(0, 60))}</button>`).join("");
+  const edgeRow = (e, dir) => {
+    const col = styleOf(e.type).color;
+    return `<button class="linkrow" data-jump="${dir === "out" ? esc(e.to) : esc(e.from)}" style="border-left:3px solid ${col}">` +
+      `<span class="etype" style="color:${col}">${esc(e.type)}</span> ${dir === "out" ? "&#8594;" : "&#8592;"} ${dir === "out" ? esc(e.to) : esc(e.from)}` +
+      ` ${textOf(dir === "out" ? e.to : e.from).slice(0, 60)}` +
+      (e.source && e.source.length ? ` <span class="note">${esc(e.source.join(", "))}</span>` : "") +
+      (e.note ? `<div class="note">${esc(e.note)}</div>` : "") + `</button>`;
+  };
+  if (!sourceBodyEl) panelMode = "excerpts";
+  const modeBtn = sourceBodyEl
+    ? `<button id="pMode" class="${panelMode === "source" ? "on" : ""}" title="${panelMode === "source" ? "switch back to the cited excerpts" : "show this node in the full source text"}">${panelMode === "source" ? "Excerpts" : "Source"}</button>`
+    : "";
   panel.innerHTML =
-    `<button class="close" id="pClose">&#215;</button>` +
-    `<h2>Node ${esc(id)}</h2>` +
+    `<div id="panelHead"><h2>Node ${esc(id)}</h2>${modeBtn}<button class="close" id="pClose">&#215;</button></div>` +
     `<div class="tagrow"><span class="tag">${esc(n.type)}</span>` +
     (n.attribution && n.attribution !== "n/a" ? `<span class="tag">${esc(n.attribution)}</span>` : "") +
-    `</div><div class="text">${esc(n.text)}</div>` +
-    `<div class="sect">Where it comes from</div>${srcs}` +
-    (id !== "0" && parent.get(id) !== undefined ? `<div class="sect">Parent</div><button class="linkrow" data-jump="${esc(parent.get(id))}">${esc(parent.get(id))} ${esc(textOf(parent.get(id)).slice(0, 60))}</button>` : "") +
-    (kids ? `<div class="sect">Children</div>${kids}` : "") +
+    `</div>` +
+    (panelMode === "source"
+      ? `<div class="sect">Source text</div>`
+      : `<div class="sect">Where it comes from</div>${srcs}`) +
     (out.length ? `<div class="sect">Links out</div>${out.map(e => edgeRow(e, "out")).join("")}` : "") +
     (inc.length ? `<div class="sect">Links in</div>${inc.map(e => edgeRow(e, "in")).join("")}` : "");
+  if (panelMode === "source" && sourceBodyEl) panel.appendChild(sourceBodyEl);
   panel.classList.add("open");
-  wrap.classList.add("shifted");
+  document.getElementById("panelHandle").classList.add("open");
+  applyPanelWidth();
+  const mode = document.getElementById("pMode");
+  if (mode) mode.addEventListener("click", () => {
+    panelMode = panelMode === "source" ? "excerpts" : "source";
+    buildPanel(id);
+  });
   panel.querySelectorAll(".srcbtn").forEach(b => b.addEventListener("click", () => {
     const t = document.getElementById("pass-" + b.dataset.ref.slice(1));
     if (t) t.classList.toggle("show");
+  }));
+  panel.querySelectorAll(".passage").forEach(el => el.addEventListener("click", () => {
+    panelMode = "source";
+    buildPanel(id);
+    scrollToRef(el.id.replace("pass-", "¶"));
   }));
   panel.querySelectorAll("[data-jump]").forEach(b => b.addEventListener("click", () => jump(b.dataset.jump)));
   document.getElementById("pClose").addEventListener("click", () => {
@@ -693,6 +820,7 @@ function buildPanel(id) {
     selected = null;
     render();
   });
+  updateSourceHighlights(true);
 }
 function buildLegend() {
   const counts = {};
@@ -728,14 +856,36 @@ function init() {
   document.getElementById("title").textContent = (GRAPH.meta && GRAPH.meta.title) || "Point graph";
   document.getElementById("srcname").textContent = (GRAPH.meta && GRAPH.meta.source) || "";
   const topbar = document.getElementById("topbar");
-  const fitCanvasToTopbar = () => { wrap.style.top = topbar.offsetHeight + "px"; };
+  const fitCanvasToTopbar = () => {
+    wrap.style.top = topbar.offsetHeight + "px";
+    document.getElementById("panelHandle").style.top = topbar.offsetHeight + "px";
+  };
   fitCanvasToTopbar();
-  window.addEventListener("resize", fitCanvasToTopbar);
+  window.addEventListener("resize", () => { fitCanvasToTopbar(); applyPanelWidth(); });
   buildLegend();
+  if (GRAPH.meta && GRAPH.meta.sourceText) sourceBodyEl = buildSourceBody();
   selected = nodes.has("0") ? "0" : null;
   render();
   if (selected) buildPanel(selected);
   fitView();
+
+  const handle = document.getElementById("panelHandle");
+  let resize = null;
+  handle.addEventListener("mousedown", ev => {
+    ev.preventDefault();
+    resize = { x: ev.clientX, w: panelW };
+    handle.classList.add("dragging");
+  });
+  window.addEventListener("mousemove", ev => {
+    if (!resize) return;
+    panelW = resize.w + (resize.x - ev.clientX);
+    applyPanelWidth();
+  });
+  window.addEventListener("mouseup", () => {
+    if (!resize) return;
+    resize = null;
+    handle.classList.remove("dragging");
+  });
 
   let drag = null;
   let ndText = null;

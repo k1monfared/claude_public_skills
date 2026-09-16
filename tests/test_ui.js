@@ -59,6 +59,20 @@ const state = page => page.evaluate(() => {
   ok("initial: 9 contains edges, 2 cross edges", s.containsPaths === 9 && s.xPaths === 2, s);
   ok("initial: nothing culled in view", s.hiddenPaths === 0, s.hiddenPaths);
 
+  const panelInfo = await page.evaluate(() => {
+    const p = document.getElementById("panel");
+    const pass = [...p.querySelectorAll(".passage")];
+    return {
+      hasTextBlock: !!p.querySelector(".text"),
+      sects: [...p.querySelectorAll(".sect")].map(el => el.textContent),
+      passages: pass.length,
+      passagesVisible: pass.every(el => getComputedStyle(el).display !== "none" && el.textContent.length > 0)
+    };
+  });
+  ok("sidebar: node text not repeated", panelInfo.hasTextBlock === false, panelInfo);
+  ok("sidebar: no parent or children sections", !panelInfo.sects.includes("Parent") && !panelInfo.sects.includes("Children"), panelInfo.sects);
+  ok("sidebar: citations expanded by default", panelInfo.passages === 2 && panelInfo.passagesVisible, panelInfo);
+
   await page.keyboard.press("Enter");
   s = await state(page);
   ok("enter: sidebar focus on first row", s.kbdFocus === 1, s.kbdFocus);
@@ -83,6 +97,108 @@ const state = page => page.evaluate(() => {
   await page.keyboard.press("ArrowUp");
   s = await state(page);
   ok("up: back to node 2", s.selected === "2", s.selected);
+
+  const linkColors = await page.evaluate(() => [...document.querySelectorAll("#panel .linkrow .etype")].map(el => [el.textContent, getComputedStyle(el).color]));
+  const colorFor = t => { const f = linkColors.find(([name]) => name === t); return f ? f[1] : null; };
+  ok("sidebar: link colors match the legend palette",
+    colorFor("supports") === "rgb(22, 163, 74)" && colorFor("qualifies") === "rgb(37, 99, 235)",
+    linkColors);
+
+  const srcBtn = await page.evaluate(() => {
+    const b = document.getElementById("pMode");
+    return b ? b.textContent : null;
+  });
+  ok("source: mode toggle shown on top of the sidebar", srcBtn === "Source", srcBtn);
+  const rightBefore = await page.evaluate(() => document.getElementById("canvasWrap").style.right);
+  await page.click("#pMode");
+  await page.waitForTimeout(150);
+  const srcOpen = await page.evaluate(() => ({
+    inPanel: !!document.querySelector("#panel #sourceBody"),
+    marks: document.querySelectorAll("#sourceBody mark").length,
+    modeLabel: document.getElementById("pMode").textContent,
+    right: document.getElementById("canvasWrap").style.right
+  }));
+  ok("source: toggle shows the full source inside the sidebar", srcOpen.inPanel && srcOpen.marks === 34, srcOpen);
+  ok("source: toggling does not change the sidebar width", srcOpen.right === rightBefore, [rightBefore, srcOpen.right]);
+  ok("source: toggle label flips to Excerpts", srcOpen.modeLabel === "Excerpts", srcOpen.modeLabel);
+  const paint = await page.evaluate(() => {
+    const g = id => {
+      const m = document.getElementById(id);
+      if (!m) return null;
+      return { bg: getComputedStyle(m).backgroundColor };
+    };
+    return { own: g("src-5"), supports: g("src-20"), qualifies: g("src-30"), untouched: g("src-34") };
+  });
+  ok("source: selected claim sentence in claim blue", paint.own.bg === "rgb(219, 234, 254)", paint.own);
+  ok("source: supports-related sentence in supports green", paint.supports.bg.startsWith("rgba(22, 163, 74"), paint.supports);
+  ok("source: qualifies-related sentence in qualifies blue", paint.qualifies.bg.startsWith("rgba(37, 99, 235"), paint.qualifies);
+  ok("source: unrelated sentences are not highlighted", paint.untouched.bg === "rgba(0, 0, 0, 0)", paint.untouched);
+  await page.evaluate(() => document.getElementById("src-7").click());
+  await page.waitForTimeout(120);
+  s = await state(page);
+  ok("source: clicking a cited span selects a citing node", s.selected === "3" && s.panelTitle === "Node 3", s);
+  const claimPaint = await page.evaluate(() => {
+    const m = document.getElementById("src-7");
+    return { bg: getComputedStyle(m).backgroundColor };
+  });
+  ok("source: claim sentence highlighted in claim blue", claimPaint.bg === "rgb(219, 234, 254)", claimPaint);
+  await page.evaluate(() => document.getElementById("src-1").click());
+  await page.waitForTimeout(120);
+  s = await state(page);
+  const summaryPaint = await page.evaluate(() => {
+    const m = document.getElementById("src-1");
+    return { bg: getComputedStyle(m).backgroundColor };
+  });
+  ok("source: summary sentence highlighted in summary color", s.selected === "summary" && summaryPaint.bg === "rgb(229, 231, 235)", [s, summaryPaint]);
+  await page.click("#pMode");
+  await page.waitForTimeout(120);
+  const backToExcerpts = await page.evaluate(() => ({
+    excerpts: document.querySelectorAll("#panel .passage").length,
+    inPanel: !!document.querySelector("#panel #sourceBody"),
+    modeLabel: document.getElementById("pMode").textContent
+  }));
+  ok("source: toggling back restores the excerpts", !backToExcerpts.inPanel && backToExcerpts.excerpts === 2 && backToExcerpts.modeLabel === "Source", backToExcerpts);
+  await page.evaluate(() => document.querySelector("#panel .passage").click());
+  await page.waitForTimeout(120);
+  const fromPassage = await page.evaluate(() => ({
+    inPanel: !!document.querySelector("#panel #sourceBody"),
+    marks: document.querySelectorAll("#sourceBody mark").length
+  }));
+  s = await state(page);
+  ok("source: clicking an excerpt jumps into the source view", fromPassage.inPanel && fromPassage.marks === 34 && s.selected === "summary", [fromPassage, s.selected]);
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  s = await state(page);
+  ok("back to node 2 after source checks", s.selected === "2", s.selected);
+  await page.click("#pMode");
+  await page.waitForTimeout(100);
+
+  const geom = () => page.evaluate(() => {
+    const pane = document.getElementById("panel").getBoundingClientRect();
+    const g = document.querySelector("#gNodes g.selected").getBoundingClientRect();
+    const wr = document.getElementById("canvasWrap").getBoundingClientRect();
+    return { w: pane.width, dx: g.x - wr.x, dy: g.y - wr.y };
+  });
+  const beforeResize = await geom();
+  let hb = await page.locator("#panelHandle").boundingBox();
+  await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(hb.x + hb.width / 2 - 120, hb.y + hb.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(120);
+  const afterResize = await geom();
+  ok("sidebar: dragging the handle resizes the panel", afterResize.w > beforeResize.w + 100, [beforeResize.w, afterResize.w]);
+  ok("sidebar: selected node keeps its offset from the render area corner",
+    Math.abs(afterResize.dx - beforeResize.dx) <= 2 && Math.abs(afterResize.dy - beforeResize.dy) <= 2,
+    [beforeResize, afterResize]);
+  hb = await page.locator("#panelHandle").boundingBox();
+  await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(hb.x + 800, hb.y + hb.height / 2, { steps: 10 });
+  await page.mouse.up();
+  await page.waitForTimeout(120);
+  const minW = await page.evaluate(() => document.getElementById("panel").getBoundingClientRect().width);
+  ok("sidebar: resize clamps at the minimum width", Math.abs(minW - 260) <= 1, minW);
 
   const rSpaceBefore = await rectOf("2 ");
   await page.keyboard.press(" ");
@@ -414,6 +530,8 @@ const state = page => page.evaluate(() => {
   await page.waitForTimeout(150);
   s = await state(page);
   ok("big graph: space unfolds the summary", s.nodes === 1 + bigMains, s.nodes);
+  const noSrc = await page.evaluate(() => !document.getElementById("pMode"));
+  ok("big graph: no source toggle without source text", noSrc);
   fs.rmSync(bigTmp, { recursive: true, force: true });
 
   ok("no page errors", errors.length === 0, errors);
