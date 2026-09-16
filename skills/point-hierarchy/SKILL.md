@@ -4,7 +4,7 @@ description: Extract a rooted, fully cited idea graph from any text. The graph.j
 allowed-tools: Read, Write, Edit, Bash
 argument-hint: [path-to-text or pasted text]
 tags: [analysis, loglog, knowledge-graph]
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Point Hierarchy
@@ -31,9 +31,12 @@ All commands run from the skill directory:
 python3 scripts/graph.py validate name.graph.json    # integrity + citation check, exit 1 on error
 python3 scripts/graph.py stats name.graph.json       # coverage, tree-ness, hubs, cycles
 python3 scripts/graph.py renumber name.graph.json -i # canonicalize node ids after restructuring
+python3 scripts/graph.py render name.graph.json      # outline.log and graph.html in one step
 python3 scripts/graph.py to-outline name.graph.json -o name.outline.log
 python3 scripts/graph.py to-html name.graph.json -o name.graph.html
 ```
+
+Any graph that passes `validate` renders, whatever its size, depth, or shape: hundreds of nodes, any number of layers, custom node types listed in the schema, and custom edge types declared in `meta.edgeTypes`. The viewer reads everything from the graph: node colors from the node types, legend and edge styling from the edge-type registry, layers from the tree depth. Nothing in the viewer is specific to one document.
 
 ## Graph schema
 
@@ -71,7 +74,7 @@ python3 scripts/graph.py to-html name.graph.json -o name.graph.html
 4. **Atomic nodes**: one idea per node, 25 words or fewer, phrased to be readable out of context. Split anything fused. Nuance travels with the claim it qualifies, as a `qualifies` edge or a nuance child.
 5. **Single attachment, many links**: each idea lives at exactly one place in the tree. Everything else is a cross edge, never a duplicate node.
 6. **Restate, never delete**: when the same claim recurs, keep the strongest node and record the recurrence as a `restates` edge. Circularity stays visible, never silently resolved.
-7. **Precision survives compression**: every number, date, count, percentage, unit, range, hedge, conditional, negation, and scope word in a cited passage must survive into its node with meaning intact. Never narrow a range (tens to thousands stays tens to thousands, never hundreds). Never generalize a scoped figure (a week of battery on one model stays scoped to that model, never a general requirement). Never absolutize a hedged claim (often, tend to, might, if mechanisms are right, I think). Counts keep all parts (38 strategies across 14 families, never 38 families). A node that drops any of these is defective even when its gist is right.
+7. **Precision survives compression**: every number, date, count, percentage, unit, range, approximator, hedge, conditional, negation, scope word, and limiting adjective in a cited passage must survive into its node with meaning intact. This applies to every node type, including summary, theme, and header nodes: a parent that absolutizes what its child hedges is defective, even when the child is right. Never narrow a range (tens to thousands stays tens to thousands, never hundreds). Never generalize a scoped figure (a week of battery on one model stays scoped to that model, never a general requirement). Never round or drop an approximator (over 3,400 stays over 3,400, never 3,400; about 40 stays about 40). Never absolutize a hedged claim (often, tend to, might, if mechanisms are right, I think). Counts keep all parts (38 strategies across 14 families, never 38 families). Limiting adjectives such as credible, relevant, major, and minor stay attached to what they limit. A node that drops any of these is defective even when its gist is right.
 
 ## Extraction passes
 
@@ -87,7 +90,7 @@ Read from the beginning again. Write the candidate root summary and the main-poi
 
 ### Pass 2: Trace
 
-Read from the beginning a third time. For every passage, note which node(s) it serves and in what role (states a point, evidence, example, counterpoint, concession, transition, digression). Flag passages whose load-bearing content is a number, date, range, or conditional, so the Fidelity check knows which nodes carry precision cargo. The text may wander, this ledger is what lets the graph reorganize without losing anything.
+Read from the beginning a third time. For every passage, note which node(s) it serves and in what role (states a point, evidence, example, counterpoint, concession, transition, digression). Flag passages whose load-bearing content is a number, date, range, approximator, conditional, or limiting adjective, so the Fidelity check knows which nodes carry precision cargo. The text may wander, this ledger is what lets the graph reorganize without losing anything.
 
 ### Pass 3: Assembly
 
@@ -95,7 +98,7 @@ Read from the beginning a fourth time, ledger in hand, and build the full `graph
 
 ### Pass 4: Deduplication and circularity
 
-Find recurrences and circles. Merge repeats into the strongest node plus `restates` edges, but first check each recurrence for new content or shifted scope: shifted scope is a development, not a duplicate. Represent unresolved circles with cross edges in both directions and a `contradiction` node explaining them.
+Find recurrences and circles. Merge repeats into the strongest node plus `restates` edges, but first check each recurrence for new content or shifted scope: shifted scope is a development, not a duplicate. Check header nodes against their children at the same time: a header whose text adds nothing over a child is a duplicate, abstract it to the level above the child's content or fold it away. Represent unresolved circles with cross edges in both directions and a `contradiction` node explaining them.
 
 ## Distillation loop
 
@@ -106,15 +109,16 @@ The first assembly is rarely clean. Iterate on `graph.json`: split fused nodes, 
 After the loop settles, three checks in order. Fix failures and re-run the failed check.
 
 1. **Mechanical**: `validate` passes with zero errors, zero uncited passages, and warnings either zero or understood. `stats` shows sane structure.
-2. **Fidelity**: re-read every node's text against its cited passage text in `meta.passages`. This is a judgment check the script cannot do for you. Run this checklist per node and fix failures before moving on:
+2. **Fidelity**: re-read every node's text against its cited passage text in `meta.passages`. This is a judgment check the script cannot do for you. Run this checklist per node, including summary, theme, and header nodes, and fix failures before moving on:
     - Numbers: every number, date, count, percentage, and unit in the passage appears in the node exactly, no rounding, no dropped parts.
+    - Approximators: over, about, nearly, more than, around, and their kin stay attached to their number. over 3,400 never becomes 3,400.
     - Ranges stay wide: a range is never narrowed and a scoped figure never generalized.
-    - Hedges and conditionals: often, tend to, might, sometimes, if, unless, I think, and their kin survive. A hedged source stated as absolute fact is a defect.
+    - Hedges and conditionals: often, tend to, might, sometimes, if, unless, I think, and their kin survive. A hedged source stated as absolute fact is a defect, including when the hedge lives in a child node and the header states the absolute.
     - Negations: not, never, no, without, except, only keep their polarity. A flipped or dropped negation is a Critical defect.
-    - Scope words: every, most, some, major, and their kin match the source scope.
+    - Scope words and limiting adjectives: every, most, some, major, minor, credible, relevant, and their kin match the source scope.
     - Attribution: the node carries the right attribution and no counterpoint is promoted to a claim.
     - No overclaim: the node asserts nothing beyond its source. A node asserting more than its source must be narrowed or split, then re-run Fidelity for it.
-3. **Render**: run `to-outline` and `to-html`, read the outline once as a reader. If a layer reads wrong, the graph is wrong: fix the graph, never the outline. While reading, also check that no branch restates an earlier branch without adding information: a restated branch means a missed `restates` edge or a duplicate node from Pass 4.
+3. **Render**: run `to-outline` and `to-html`, read the outline once as a reader. If a layer reads wrong, the graph is wrong: fix the graph, never the outline. While reading, also check that no branch restates an earlier branch without adding information: a restated branch means a missed `restates` edge or a duplicate node from Pass 4. Apply the same test between a header node and its children: a header that repeats a child's content without adding a level of abstraction is duplication, so abstract the header or fold it away.
 
 Failure routing:
 

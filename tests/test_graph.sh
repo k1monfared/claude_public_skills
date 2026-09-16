@@ -148,6 +148,13 @@ grep -q "__GRAPH_JSON__" "$TMP/out.html" \
     || { TESTS_RUN=$((TESTS_RUN + 1)); PASS=$((PASS + 1)); echo "  PASS: placeholder replaced"; }
 assert_exit_code "refuses invalid graph" 1 python3 "$GRAPH" to-html "$TMP/bad_endpoint.json" -o "$TMP/bad.html"
 
+echo "=== render ==="
+assert_exit_code "render generates both outputs" 0 python3 "$GRAPH" render "$EXAMPLE" -o "$TMP/render"
+[[ -f "$TMP/render/car-ban.outline.log" && -f "$TMP/render/car-ban.graph.html" ]]
+assert_contains "rendered outline has coverage" "Coverage: 5 of 5" "$(cat "$TMP/render/car-ban.outline.log")"
+assert_contains "rendered html embeds graph" "const GRAPH" "$(cat "$TMP/render/car-ban.graph.html")"
+assert_exit_code "render refuses invalid graph" 1 python3 "$GRAPH" render "$TMP/bad_endpoint.json" -o "$TMP/render2"
+
 echo "=== loglog interop ==="
 python3 "$GRAPH" to-outline "$EXAMPLE" -o "$TMP/out.log" > /dev/null
 if command -v loglog > /dev/null 2>&1 && loglog "$TMP/out.log" > "$TMP/out.md" 2>/dev/null; then

@@ -9,6 +9,7 @@ Subcommands:
   validate    check structural and citation integrity, exit 1 on errors
   stats       coverage, tree-ness, hubs, cycles
   renumber    rewrite node ids so they follow tree position exactly
+  render      generate outline.log and graph.html together
   to-outline  generate a loglog outline from the graph
   to-html     generate the interactive viewer from the graph
 """
@@ -476,6 +477,20 @@ def cmd_to_outline(args):
     return 0
 
 
+def render_html(g, out):
+    embedded = json.loads(json.dumps(g))
+    embedded.setdefault("meta", {})["edgeTypes"] = merged_registry(g)
+    template_path = Path(__file__).resolve().parent.parent / "templates" / "viewer.html"
+    try:
+        template = template_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise GraphError(f"cannot read viewer template {template_path}: {exc}")
+    if "__GRAPH_JSON__" not in template:
+        raise GraphError(f"viewer template {template_path} has no __GRAPH_JSON__ token")
+    payload = json.dumps(embedded, ensure_ascii=False).replace("</", "<\\/")
+    Path(out).write_text(template.replace("__GRAPH_JSON__", payload), encoding="utf-8")
+
+
 def cmd_to_html(args):
     g = load_graph(args.graph)
     errors, _, _ = validate(g)
@@ -484,23 +499,39 @@ def cmd_to_html(args):
             print(f"error: {e}", file=sys.stderr)
         print("refusing to render an invalid graph, use --force to override", file=sys.stderr)
         return 1
-    embedded = json.loads(json.dumps(g))
-    embedded.setdefault("meta", {})["edgeTypes"] = merged_registry(g)
-    template_path = Path(__file__).resolve().parent.parent / "templates" / "viewer.html"
-    try:
-        template = template_path.read_text(encoding="utf-8")
-    except OSError as exc:
-        print(f"error: cannot read viewer template {template_path}: {exc}", file=sys.stderr)
-        return 1
-    if "__GRAPH_JSON__" not in template:
-        print(f"error: viewer template {template_path} has no __GRAPH_JSON__ token", file=sys.stderr)
-        return 1
-    payload = json.dumps(embedded, ensure_ascii=False).replace("</", "<\\/")
-    html = template.replace("__GRAPH_JSON__", payload)
     out = args.out or str(Path(args.graph).with_suffix("").with_name(
         Path(args.graph).stem.replace(".graph", "") + ".graph.html"))
-    Path(out).write_text(html, encoding="utf-8")
+    try:
+        render_html(g, out)
+    except GraphError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     print(f"wrote {out}")
+    return 0
+
+
+def cmd_render(args):
+    g = load_graph(args.graph)
+    errors, _, _ = validate(g)
+    if errors and not args.force:
+        for e in errors:
+            print(f"error: {e}", file=sys.stderr)
+        print("refusing to render an invalid graph, use --force to override", file=sys.stderr)
+        return 1
+    base = Path(args.graph)
+    stem = base.stem[:-6] if base.stem.endswith(".graph") else base.stem
+    outdir = Path(args.outdir) if args.outdir else base.parent
+    outdir.mkdir(parents=True, exist_ok=True)
+    outline_path = outdir / f"{stem}.outline.log"
+    html_path = outdir / f"{stem}.graph.html"
+    outline_path.write_text(to_outline_text(g), encoding="utf-8")
+    try:
+        render_html(g, html_path)
+    except GraphError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    print(f"wrote {outline_path}")
+    print(f"wrote {html_path}")
     return 0
 
 
@@ -535,6 +566,12 @@ def main(argv=None):
     h.add_argument("-o", "--out", help="output .html path, default next to the graph")
     h.add_argument("-f", "--force", action="store_true")
     h.set_defaults(func=cmd_to_html)
+
+    rn = sub.add_parser("render", help="generate outline and viewer in one step")
+    rn.add_argument("graph")
+    rn.add_argument("-o", "--outdir", help="output directory, default next to the graph")
+    rn.add_argument("-f", "--force", action="store_true")
+    rn.set_defaults(func=cmd_render)
 
     args = p.parse_args(argv)
     try:
