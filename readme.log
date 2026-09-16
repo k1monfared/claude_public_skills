@@ -4,7 +4,7 @@
     - The digestif skill is vendored from its standalone repo, which owns the source.
         - Source of truth: the digestif repo (local checkout: ../digestif), GPL-3.0
         - Refresh the vendored copy: scripts/sync-digestif-skill.sh
-        - The evaluation harness under eval/ moves to that repo once the evaluation run finishes.
+        - The evaluation harness now lives in that repo under eval/.
 
 - Quick Start
     - Clone: git clone <repo-url>

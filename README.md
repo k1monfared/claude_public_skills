@@ -4,7 +4,7 @@
 
 A collection of reusable [Claude Code](https://claude.ai/claude-code) skills with a management CLI. Skills are developed here and can be installed or linked into any project.
 
-The `digestif` skill is vendored from its standalone repo, which owns the source (GPL-3.0). Refresh the vendored copy with `scripts/sync-digestif-skill.sh`. The evaluation harness under `eval/` moves to that repo once the evaluation run finishes.
+The `digestif` skill is vendored from its standalone repo, which owns the source (GPL-3.0). Refresh the vendored copy with `scripts/sync-digestif-skill.sh`. The evaluation harness now lives in that repo under `eval/`.
 
 ## What Are Skills?
 
