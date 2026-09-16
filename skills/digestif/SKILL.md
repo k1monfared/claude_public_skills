@@ -1,5 +1,5 @@
 ---
-name: point-hierarchy
+name: digestif
 description: Extract a rooted, fully cited idea graph from any text. The graph.json is the single working artifact the LLM iterates on. The loglog outline and the interactive zoomable viewer are generated afterwards by deterministic Python, never by the LLM.
 allowed-tools: Read, Write, Edit, Bash
 argument-hint: [path-to-text or pasted text]
@@ -7,7 +7,7 @@ tags: [analysis, loglog, knowledge-graph]
 version: 0.4.0
 ---
 
-# Point Hierarchy
+# Digestif
 
 Turn a text into one rooted idea graph. The root is a single-sentence summary of the whole document. Its children are the main points. Below them sit the details of each point, and below those the evidence, examples, counterpoints, and nuances, as deep as the text goes. Typed links connect any two ideas across any distance: this evidence supports that claim, this detail contradicts that one, this example illustrates two different points at once.
 

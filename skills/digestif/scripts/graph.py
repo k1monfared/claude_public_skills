@@ -590,11 +590,15 @@ def cmd_render(args):
         print("refusing to render an invalid graph, use --force to override", file=sys.stderr)
         return 1
     base = Path(args.graph)
-    stem = base.stem[:-6] if base.stem.endswith(".graph") else base.stem
     outdir = Path(args.outdir) if args.outdir else base.parent
     outdir.mkdir(parents=True, exist_ok=True)
-    outline_path = outdir / f"{stem}.outline.log"
-    html_path = outdir / f"{stem}.graph.html"
+    if base.stem == "graph":
+        outline_path = outdir / "outline.log"
+        html_path = outdir / "graph.html"
+    else:
+        stem = base.stem[:-6] if base.stem.endswith(".graph") else base.stem
+        outline_path = outdir / f"{stem}.outline.log"
+        html_path = outdir / f"{stem}.graph.html"
     outline_path.write_text(to_outline_text(g), encoding="utf-8")
     try:
         render_html(g, html_path)
