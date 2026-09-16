@@ -1,8 +1,8 @@
 - Project Status
-    - Last Updated: 2026-08-23
+    - Last Updated: 2026-09-15
     - Development Mode: Claude Code
     - Stage: MVP
-    - Next Milestone: Beta release with upgrade command and list filtering
+    - Next Milestone: point-hierarchy v0.5.0 fixes (hedges, agency, redundancy), Beta release with upgrade command and list filtering
 
 - Development Stages
     - [x] Initial Setup
@@ -62,11 +62,16 @@
     - Active Tasks:
         - [] Add more skills
         - [] Document usage for external contributors
+        - [] point-hierarchy v0.5.0: fix dropped hedges, agency flips, precision node redundancy
     - Blockers:
         - None
     - Recent Progress:
         - 2026-03-16: Implemented full skill management CLI (Tasks 1-10)
         - 2026-08-23: Added pr-deep-review skill (multi-agent parallel PR review)
+        - 2026-09-11: Added point-hierarchy skill (text to cited idea graph plus loglog outline)
+        - 2026-09-11: Built multi-skill eval harness under eval/ with reference-free judges (faithfulness, coverage, concision, overall)
+        - 2026-09-12: Scored point-hierarchy v0.2.0 (6 Pass, 6 Borderline) and v0.3.0 (12 Pass) on a frozen 12-text corpus
+        - 2026-09-15: v0.4.0 precision fixes, scripted judge pipeline (eval/lib/judge_run.py), all three runs re-judged with one instrument, v0.4.0 scores 4 Pass, 7 Borderline, 1 Fail
 
 - Notes
     - Use loglog format for all documentation

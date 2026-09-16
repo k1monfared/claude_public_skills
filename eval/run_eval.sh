@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Create a new timestamped eval run skeleton for any skill.
 # Usage: ./run_eval.sh <skill-name> [skill-version-label]
-# Example: ./run_eval.sh point-hierarchy v1
+# Example: ./run_eval.sh digestif v1
 set -euo pipefail
 
 SKILL_NAME="${1:?usage: run_eval.sh <skill-name> [version-label]}"
@@ -39,16 +39,18 @@ for item in corpus["items"]:
     readme = sdir / "HOWTO.md"
     if not readme.exists():
         readme.write_text(
-            f"# {sid}\n\n"
-            "1. Generate loglog into output.log using the skill under test.\n"
-            "2. Run Judge F prompt, save JSON as judge_faithfulness.json.\n"
-            "3. Run Judge Cov prompt, save JSON as judge_coverage.json.\n"
-            "4. Run Judge Con prompt, save JSON as judge_concision.json.\n"
-            "5. Run Judge Top prompt, save JSON as judge_top.json.\n"
-            "6. Append full judge reasoning transcripts to trace.md.\n"
-            "7. From run dir, run aggregate.py then check.py.\n",
-            encoding="utf-8",
-        )
+        f"# {sid}\n\n"
+        "1. Generate loglog into output.log using the skill under test.\n"
+        "2. Run the scripted judges: python3 eval/lib/judge_run.py all <this-dir>.\n"
+        "   Or run the 4 judge prompts manually and save JSON per step:\n"
+        "   a. Judge F prompt, save JSON as judge_faithfulness.json.\n"
+        "   b. Judge Cov prompt, save JSON as judge_coverage.json.\n"
+        "   c. Judge Con prompt, save JSON as judge_concision.json.\n"
+        "   d. Judge Top prompt, save JSON as judge_top.json.\n"
+        "3. Append full judge reasoning to trace.md (judge_run.py does this).\n"
+        "4. Run eval/lib/aggregate.py and eval/lib/check.py from the run dir.\n",
+        encoding="utf-8",
+    )
 PY
 
 cat > "$RUN_DIR/RUNLOG.md" <<EOF
